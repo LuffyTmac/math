@@ -23,3 +23,5 @@ logs/
 
 # 打包
 /build/
+
+.workbuddy

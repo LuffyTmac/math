@@ -40,6 +40,9 @@ public class SysUser {
     /** 角色：ADMIN / USER */
     private String role;
 
+    /** 状态：1 启用，0 禁用 */
+    private Integer status;
+
     /** 逻辑删除：0 未删，1 已删 */
     @TableLogic
     private Integer deleted;

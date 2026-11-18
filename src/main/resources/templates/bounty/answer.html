@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>答题 - 数学小乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('hall')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('悬赏大厅 / 答题')"></header>
+
+        <div class="content">
+            <div th:if="${msg != null}" class="msg"
+                 th:classappend="${msgType == 'success' ? 'msg-success' : 'msg-error'}"
+                 th:text="${msg}">提示</div>
+
+            <!-- 题目信息 -->
+            <div class="card">
+                <div class="card-title">📝 题目信息</div>
+                <div style="margin-bottom: 12px;">
+                    <span th:if="${question.questionType == 'CALC'}" class="type-tag calc">计算题</span>
+                    <span th:if="${question.questionType == 'APPLICATION'}" class="type-tag application">应用题</span>
+                    <span th:if="${question.questionType == 'ORAL'}" class="type-tag oral">口算题</span>
+                    <span class="star-display" style="margin-left:10px;">
+                        悬赏 <span th:each="i : ${#numbers.sequence(1, question.starCount)}">⭐</span>
+                    </span>
+                </div>
+                <h3 style="color:#333;margin-bottom:12px;" th:text="${question.title}">题目标题</h3>
+                <div class="rich-content" th:utext="${question.content}">
+                    题目内容（富文本）
+                </div>
+            </div>
+
+            <!-- 提示与思路（仅当用户已答过此题 且 题目设置了展示提示 且 有内容时才展示）
+                 答题页用户必然未答过此题（已答过的会被重定向走），因此答题页永远不展示提示。
+                 这满足需求：未答完题前即使设置了展示提示也隐藏，答题结束后才展示。 -->
+            <div class="card hint-card"
+                 th:if="${hasAnswered == true and question.hintVisible == 1 and question.hintContent != null and !question.hintContent.isEmpty()}">
+                <div class="card-title">💡 提示与思路</div>
+                <div class="rich-content" th:utext="${question.hintContent}">提示内容</div>
+            </div>
+
+            <!-- 答题表单 -->
+            <div class="card">
+                <div class="card-title">✏️ 写下你的答案</div>
+                <form th:action="@{/bounty/answer}" method="post"
+                      onsubmit="document.getElementById('answerContent').value = document.getElementById('editor').innerHTML;">
+                    <input type="hidden" name="questionId" th:value="${question.id}"/>
+                    <input type="hidden" name="answerContent" id="answerContent"/>
+
+                    <div class="re-toolbar">
+                        <span class="re-btn" data-cmd="bold" title="加粗" style="font-weight:bold;">B</span>
+                        <span class="re-btn" data-cmd="italic" title="斜体" style="font-style:italic;">I</span>
+                        <span class="re-btn" data-cmd="underline" title="下划线" style="text-decoration:underline;">U</span>
+                        <span class="re-btn" data-cmd="insertUnorderedList" title="无序列表">• 列表</span>
+                        <span class="re-btn" data-cmd="insertOrderedList" title="有序列表">1. 列表</span>
+                        <span class="re-btn" data-cmd="removeFormat" title="清除格式">清除</span>
+                        <span class="re-btn re-btn-img" title="插入图片">🖼 图片<input type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp"/></span>
+                    </div>
+                    <div id="editor" class="rich-editor" contenteditable="true"
+                         data-placeholder="在这里写下你的解题思路和答案～加油哦！"></div>
+
+                    <div class="form-hint">
+                        💡 提示：认真审题，把你的解题思路和计算过程写清楚，老师会根据你的答题给你打星星哦～
+                    </div>
+
+                    <div class="form-actions" style="margin-left:0; margin-top:18px;">
+                        <button type="submit" class="btn btn-primary">🚀 提交答案</button>
+                        <a th:href="@{/bounty/hall}" class="btn btn-default">← 返回大厅</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/rich-editor.js}"></script>
+<script>initRichEditor('editor', 'answerContent');</script>
+</body>
+</html>

@@ -38,8 +38,8 @@
         /* ---------- 登录卡片 ---------- */
         .login-card {
             background: #ffffff;
-            width: 370px;
-            padding: 36px 34px 30px;
+            width: 400px;
+            padding: 36px 38px 30px;
             border-radius: 28px;
             box-shadow: 0 14px 34px rgba(91, 134, 229, 0.25);
             text-align: center;
@@ -156,10 +156,13 @@
         <div class="subtitle">快来一起学数学吧～</div>
 
         <div class="msg error" th:if="${param.error}">
-            😯 哎呀，名字或密码不对哦，再试试看！
+            😯 名字或密码不对，再试试看！
+        </div>
+        <div class="msg error" th:if="${param.disabled}">
+            🚫 账号已被禁用，请联系管理员启用
         </div>
         <div class="msg success" th:if="${param.logout}">
-            👋 拜拜～下次再来玩哦！
+            👋 拜拜～下次再来玩！
         </div>
 
         <form th:action="@{/login}" method="post">

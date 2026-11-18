@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title>题目管理 - 数学小乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('bounty-admin')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('悬赏管理 / 题目列表')"></header>
+
+        <div class="content">
+            <div th:if="${msg != null}" class="msg"
+                 th:classappend="${msgType == 'success' ? 'msg-success' : 'msg-error'}"
+                 th:text="${msg}">提示</div>
+
+            <div class="card">
+                <div class="card-title">📚 题目列表</div>
+
+                <!-- 过滤栏 -->
+                <form th:action="@{/bounty/admin/list}" method="get" class="search-bar">
+                    <a th:href="@{/bounty/admin/list}" class="btn btn-back"
+                       th:classappend="${status == '' or status == null} ? 'btn-search' : ''">全部</a>
+                    <a th:href="@{/bounty/admin/list(status='DRAFT')}" class="btn btn-back"
+                       th:classappend="${status == 'DRAFT'} ? 'btn-search' : ''">📝 草稿</a>
+                    <a th:href="@{/bounty/admin/list(status='PUBLISHED')}" class="btn btn-back"
+                       th:classappend="${status == 'PUBLISHED'} ? 'btn-search' : ''">🌟 已发布</a>
+                    <a th:href="@{/bounty/admin/add}" class="btn btn-add">+ 发布题目</a>
+                </form>
+
+                <table class="table" th:if="${questions != null and !questions.isEmpty()}">
+                    <thead>
+                    <tr>
+                        <th width="50">ID</th>
+                        <th>标题</th>
+                        <th>类型</th>
+                        <th>悬赏</th>
+                        <th>状态</th>
+                        <th>答题人数</th>
+                        <th>创建时间</th>
+                        <th width="340">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="q : ${questions}">
+                        <td th:text="${q.id}">1</td>
+                        <td>
+                            <a th:href="@{/bounty/admin/answers(questionId=${q.id})}"
+                               style="color:#1890ff;font-weight:500;text-decoration:none;"
+                               th:text="${q.title}">标题</a>
+                        </td>
+                        <td>
+                            <span th:if="${q.questionType == 'CALC'}" class="type-tag calc">计算题</span>
+                            <span th:if="${q.questionType == 'APPLICATION'}" class="type-tag application">应用题</span>
+                            <span th:if="${q.questionType == 'ORAL'}" class="type-tag oral">口算题</span>
+                        </td>
+                        <td class="star-display">
+                            <span th:each="i : ${#numbers.sequence(1, q.starCount)}">⭐</span>
+                        </td>
+                        <td>
+                            <span th:if="${q.status == 'DRAFT'}" class="tag tag-draft">📝 草稿</span>
+                            <span th:if="${q.status == 'PUBLISHED'}" class="tag tag-published">🌟 已发布</span>
+                        </td>
+                        <td>
+                            <b style="color:#1890ff;" th:text="${answerCounts[q.id]}">0</b> 人
+                        </td>
+                        <td th:text="${q.createTime != null ? #temporals.format(q.createTime, 'yyyy-MM-dd HH:mm') : '-'}">时间</td>
+                        <td class="actions">
+                            <a th:href="@{/bounty/admin/edit(id=${q.id})}" class="btn-sm btn-edit">✏️ 编辑</a>
+                            <!-- 提示与思路切换（仅有提示内容时显示） -->
+                            <form th:if="${q.hintContent != null and !q.hintContent.isEmpty() and q.hintVisible != 1}"
+                                  th:action="@{/bounty/admin/toggle-hint}" method="post" class="inline-form">
+                                <input type="hidden" name="id" th:value="${q.id}"/>
+                                <input type="hidden" name="from" value="list"/>
+                                <button type="submit" class="btn-sm btn-hint-show">💡 展示提示</button>
+                            </form>
+                            <form th:if="${q.hintContent != null and !q.hintContent.isEmpty() and q.hintVisible == 1}"
+                                  th:action="@{/bounty/admin/toggle-hint}" method="post" class="inline-form">
+                                <input type="hidden" name="id" th:value="${q.id}"/>
+                                <input type="hidden" name="from" value="list"/>
+                                <button type="submit" class="btn-sm btn-hint-hide">🙈 隐藏提示</button>
+                            </form>
+                            <!-- 草稿才显示发布按钮 -->
+                            <form th:if="${q.status == 'DRAFT'}"
+                                  th:action="@{/bounty/admin/publish}" method="post" class="inline-form">
+                                <input type="hidden" name="id" th:value="${q.id}"/>
+                                <button type="submit" class="btn-sm btn-reset" style="border:none;">📢 发布</button>
+                            </form>
+                            <!-- 已发布才显示查看答题 -->
+                            <a th:if="${q.status == 'PUBLISHED'}"
+                               th:href="@{/bounty/admin/answers(questionId=${q.id})}" class="btn-sm btn-reset">👁 查看答题</a>
+                            <form th:action="@{/bounty/admin/delete}" method="post" class="inline-form"
+                                  th:data-title="${q.title}">
+                                <input type="hidden" name="id" th:value="${q.id}"/>
+                                <button type="submit" class="btn-sm btn-del"
+                                        onclick="return confirm('确定删除题目「' + this.form.getAttribute('data-title') + '」吗？');">
+                                    🗑 删除
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div th:if="${questions == null or questions.isEmpty()}"
+                     style="text-align:center;color:#999;padding:40px;">
+                    😶 还没有题目，点击右上角「发布题目」创建第一道题吧！
+                </div>
+
+                <!-- 分页 -->
+                <div class="pager" th:if="${pages > 0}">
+                    <span class="pager-info">
+                        共 <b th:text="${total}">0</b> 道题，第
+                        <b th:text="${current}">1</b> / <b th:text="${pages}">1</b> 页
+                    </span>
+                    <div class="pager-size">
+                        每页
+                        <select onchange="window.location.href=this.value">
+                            <option th:value="@{/bounty/admin/list(page=1,size=5,status=${status})}" th:selected="${size==5}">5</option>
+                            <option th:value="@{/bounty/admin/list(page=1,size=10,status=${status})}" th:selected="${size==10}">10</option>
+                            <option th:value="@{/bounty/admin/list(page=1,size=20,status=${status})}" th:selected="${size==20}">20</option>
+                        </select>
+                        条
+                    </div>
+                    <div class="pager-links">
+                        <a th:if="${current > 1}"
+                           th:href="@{/bounty/admin/list(page=${current - 1},size=${size},status=${status})}"
+                           class="pg">上一页</a>
+                        <span th:each="i : ${#numbers.sequence(1, pages)}" class="pg-wrap">
+                            <a th:href="@{/bounty/admin/list(page=${i},size=${size},status=${status})}"
+                               th:text="${i}"
+                               th:classappend="${i == current} ? 'pg cur' : 'pg'">1</a>
+                        </span>
+                        <a th:if="${current < pages}"
+                           th:href="@{/bounty/admin/list(page=${current + 1},size=${size},status=${status})}"
+                           class="pg">下一页</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

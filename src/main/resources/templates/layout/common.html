@@ -2,39 +2,118 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <!--
-  后台公用片段：侧边栏 + 顶部栏
-  各后台页面通过 th:replace 引入：
-    <nav th:replace="layout/common :: sidebar('index')"></nav>
-    <header th:replace="layout/common :: header('首页')"></header>
+  公用片段：侧边栏 + 顶部栏
+  各页面通过 th:replace 引入：
+    <nav th:replace="layout/common :: sidebar('hall')"></nav>
+    <header th:replace="layout/common :: header('标题')"></header>
+  active 取值：hall / my-answers / index / user / bounty-admin
 -->
 <body>
 
-<!-- ========== 侧边栏：参数 active 标识当前菜单（index / user）========== -->
+<!-- ========== 侧边栏：参数 active 标识当前菜单 ========== -->
 <nav class="sidebar" th:fragment="sidebar(active)">
-    <div class="sidebar-logo">🧮 数学教学后台</div>
+    <div class="sidebar-logo">🧮 数学小乐园</div>
     <ul class="menu">
-        <li><a th:href="@{/index}" class="menu-item" th:classappend="${active == 'index'} ? 'active' : ''">
-            <span class="mi">🏠</span> 首页
-        </a></li>
-        <li><a th:href="@{/user/list}" class="menu-item" th:classappend="${active == 'user'} ? 'active' : ''">
-            <span class="mi">👥</span> 用户管理
-        </a></li>
-        <li class="menu-section">教学管理</li>
-        <li><span class="menu-item disabled"><span class="mi">📚</span> 题目管理</span></li>
-        <li><span class="menu-item disabled"><span class="mi">📖</span> 课程管理</span></li>
-        <li><span class="menu-item disabled"><span class="mi">📊</span> 统计分析</span></li>
+        <!-- 学习天地分组：所有登录用户（教师/学生/管理员）可见 -->
+        <li class="menu-section" onclick="toggleMenuGroup(this)">
+            <span class="menu-arrow">▾</span> 🌟 学习天地
+        </li>
+        <li class="menu-sub">
+            <a th:href="@{/bounty/hall}" class="menu-item" th:classappend="${active == 'hall'} ? 'active' : ''">
+                <span class="mi">🌟</span> 悬赏大厅
+            </a>
+            <a sec:authorize="isAuthenticated()" th:href="@{/bounty/my-answers}" class="menu-item" th:classappend="${active == 'my-answers'} ? 'active' : ''">
+                <span class="mi">📝</span> 我的答题
+            </a>
+        </li>
+        <!-- 管理后台分组：ADMIN + TEACHER 可见 -->
+        <li sec:authorize="hasAnyRole('ADMIN','TEACHER')" class="menu-section" onclick="toggleMenuGroup(this)">
+            <span class="menu-arrow">▾</span> ⚙️ 管理后台
+        </li>
+        <li sec:authorize="hasAnyRole('ADMIN','TEACHER')" class="menu-sub">
+            <!-- 后台首页 / 用户管理：仅 ADMIN 可见 -->
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/index}" class="menu-item" th:classappend="${active == 'index'} ? 'active' : ''">
+                <span class="mi">🏠</span> 后台首页
+            </a>
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/user/list}" class="menu-item" th:classappend="${active == 'user'} ? 'active' : ''">
+                <span class="mi">👥</span> 用户管理
+            </a>
+            <!-- 悬赏管理：ADMIN + TEACHER 可见 -->
+            <a th:href="@{/bounty/admin/list}" class="menu-item" th:classappend="${active == 'bounty-admin'} ? 'active' : ''">
+                <span class="mi">📚</span> 悬赏管理
+            </a>
+        </li>
     </ul>
+    <!-- 侧边栏底部：当前用户角色标识（管理员/教师/学生 区分一目了然） -->
+    <div class="sidebar-footer" sec:authorize="isAuthenticated()">
+        <span sec:authorize="hasRole('ADMIN')" class="role-badge role-admin">🔑 管理员</span>
+        <span sec:authorize="hasRole('TEACHER')" class="role-badge role-teacher">🎓 教师</span>
+        <span sec:authorize="hasRole('STUDENT')" class="role-badge role-student">🎒 学生</span>
+    </div>
+    <div class="sidebar-footer" sec:authorize="!isAuthenticated()">
+        <a th:href="@{/login}" class="role-badge role-guest">🔐 点击登录</a>
+    </div>
+    <script>
+        // 菜单分组折叠/展开
+        function toggleMenuGroup(section) {
+            var sub = section.nextElementSibling;
+            if (sub && sub.classList.contains('menu-sub')) {
+                sub.classList.toggle('collapsed');
+                section.classList.toggle('collapsed');
+            }
+        }
+        // 页面加载后自动展开包含 active 项的分组
+        (function () {
+            var subs = document.querySelectorAll('.menu-sub');
+            subs.forEach(function (sub) {
+                var hasActive = sub.querySelector('.menu-item.active') != null;
+                if (!hasActive) {
+                    sub.classList.add('collapsed');
+                    var section = sub.previousElementSibling;
+                    if (section && section.classList.contains('menu-section')) {
+                        section.classList.add('collapsed');
+                    }
+                }
+            });
+        })();
+    </script>
 </nav>
 
 <!-- ========== 顶部栏：参数 title 为面包屑标题 ========== -->
 <header class="header" th:fragment="header(title)">
-    <div class="breadcrumb" th:text="${title}">标题</div>
+    <div class="header-left">
+        <!-- 侧边栏折叠/展开按钮 -->
+        <button type="button" class="sidebar-toggle" onclick="toggleSidebar()" title="折叠/展开菜单" aria-label="切换菜单">
+            <span class="ic-fold">☰</span>
+            <span class="ic-unfold">▰</span>
+        </button>
+        <div class="breadcrumb" th:text="${title}">标题</div>
+    </div>
     <div class="user-area">
-        <span class="who">👤 <span sec:authentication="name">用户</span></span>
-        <form th:action="@{/logout}" method="post" class="logout-form">
+        <span sec:authorize="isAuthenticated()" class="who">👤 <span sec:authentication="name">用户</span></span>
+        <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="logout-form">
             <button type="submit" class="logout-btn">退出</button>
         </form>
+        <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="header-login-btn">登录</a>
     </div>
+    <script>
+        // 侧边栏整体折叠/展开（含 localStorage 记忆用户偏好）
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-collapsed');
+            try {
+                var collapsed = document.body.classList.contains('sidebar-collapsed');
+                localStorage.setItem('math-sidebar-collapsed', collapsed ? '1' : '0');
+            } catch (e) { /* localStorage 不可用时静默忽略 */ }
+        }
+        // 页面加载恢复折叠状态（保持跨页面/刷新后一致）
+        (function () {
+            try {
+                if (localStorage.getItem('math-sidebar-collapsed') === '1') {
+                    document.body.classList.add('sidebar-collapsed');
+                }
+            } catch (e) { /* 忽略 */ }
+        })();
+    </script>
 </header>
 
 </body>

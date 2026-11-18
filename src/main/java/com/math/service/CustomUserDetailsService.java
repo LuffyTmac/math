@@ -30,11 +30,17 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException("用户不存在：" + username);
         }
-        // role 字段存的是 ADMIN / USER，.roles() 会自动加 ROLE_ 前缀（ROLE_ADMIN / ROLE_USER）
+        // role 字段存的是 ADMIN / TEACHER / STUDENT，.roles() 会自动加 ROLE_ 前缀
+        //   ADMIN   → ROLE_ADMIN   （全部功能）
+        //   TEACHER → ROLE_TEACHER （悬赏管理，无用户管理权限）
+        //   STUDENT → ROLE_STUDENT （仅学习天地）
+        // status：1 启用，0 禁用；禁用账号设置 disabled=true，Spring Security 认证时会抛 DisabledException
+        boolean enabled = user.getStatus() != null && user.getStatus() == 1;
         return User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword())
                 .roles(user.getRole())
+                .disabled(!enabled)
                 .build();
     }
 }

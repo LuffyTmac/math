@@ -1,5 +1,6 @@
 package com.math.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -7,6 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import com.math.handler.CustomAuthenticationSuccessHandler;
 
 /**
  * Spring Security 配置
@@ -27,6 +29,12 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     /** BCrypt 密码编码器 */
+    @Autowired
+    private CustomAuthenticationFailureHandler authenticationFailureHandler;
+
+    @Autowired
+    private CustomAuthenticationSuccessHandler authenticationSuccessHandler;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -46,18 +54,22 @@ public class SecurityConfig {
             // 授权规则
             .authorizeRequests()
                 // 公开访问
-                .antMatchers("/hello", "/login", "/error", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
-                // 后台首页与用户管理：仅 ADMIN 角色
+                .antMatchers("/hello", "/login", "/error", "/bounty/hall", "/css/**", "/js/**", "/images/**", "/uploads/**", "/webjars/**").permitAll()
+                // 后台首页与用户管理：仅 ADMIN 角色（管理员唯一，默认只有一个）
                 .antMatchers("/index", "/user/**").hasRole("ADMIN")
-                // 其它请求均需认证
+                // 悬赏管理（出题/评分/题目管理）：ADMIN + TEACHER
+                .antMatchers("/bounty/admin/**").hasAnyRole("ADMIN", "TEACHER")
+                // 图片上传接口：任何已登录用户（admin/teacher/student）都可使用
+                .antMatchers("/upload/**").authenticated()
+                // 其它请求（如 /bounty/hall /bounty/answer /bounty/my-answers 等）均需登录
                 .anyRequest().authenticated()
             .and()
             // 表单登录
             .formLogin()
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/index", true)
-                .failureUrl("/login?error")
+                .successHandler(authenticationSuccessHandler)
+                .failureHandler(authenticationFailureHandler)
                 .permitAll()
             .and()
             // 退出登录

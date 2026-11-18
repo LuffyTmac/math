@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title th:text="${mode == 'edit' ? '编辑题目' : '发布题目'} + ' - 数学小乐园'">发布题目</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('bounty-admin')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header(${mode == 'edit' ? '悬赏管理 / 编辑题目' : '悬赏管理 / 发布题目'})"></header>
+
+        <div class="content">
+            <div class="card">
+                <div class="card-title" th:text="${mode == 'edit' ? '✏️ 编辑题目' : '📝 发布新题目'}">发布题目</div>
+
+                <form th:action="${mode == 'edit' ? '/bounty/admin/edit' : '/bounty/admin/add'}"
+                      method="post"
+                      onsubmit="document.getElementById('contentHidden').value = document.getElementById('editor').innerHTML;
+                                document.getElementById('hintHidden').value = document.getElementById('hintEditor').innerHTML;">
+                    <input type="hidden" name="id" th:if="${mode == 'edit'}" th:value="${question.id}"/>
+                    <input type="hidden" name="content" id="contentHidden" th:value="${question.content}"/>
+                    <input type="hidden" name="hintContent" id="hintHidden" th:value="${question.hintContent}"/>
+
+                    <!-- 标题 -->
+                    <div class="form-row">
+                        <label class="form-label"><span class="req">*</span>题目标题</label>
+                        <div class="form-control">
+                            <input type="text" name="title" th:value="${question.title}"
+                                   placeholder="一句话概括题目，如：小明的苹果" required="required"/>
+                            <div class="form-hint-inline">标题会显示在大厅卡片上，建议简短明了</div>
+                        </div>
+                    </div>
+
+                    <!-- 类型 -->
+                    <div class="form-row">
+                        <label class="form-label"><span class="req">*</span>题目类型</label>
+                        <div class="form-control">
+                            <select name="questionType">
+                                <option value="CALC" th:selected="${question.questionType == 'CALC'}">计算题（加减乘除运算）</option>
+                                <option value="APPLICATION" th:selected="${question.questionType == 'APPLICATION'}">应用题（生活场景）</option>
+                                <option value="ORAL" th:selected="${question.questionType == 'ORAL'}">口算题（快速心算）</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 悬赏星星 -->
+                    <div class="form-row">
+                        <label class="form-label"><span class="req">*</span>悬赏星星</label>
+                        <div class="form-control">
+                            <input type="hidden" name="starCount" id="starCount" th:value="${question.starCount}"/>
+                            <div class="star-picker" id="starPicker">
+                                <span class="star-opt" data-val="1">⭐</span>
+                                <span class="star-opt" data-val="2">⭐</span>
+                                <span class="star-opt" data-val="3">⭐</span>
+                                <span class="star-opt" data-val="4">⭐</span>
+                                <span class="star-opt" data-val="5">⭐</span>
+                            </div>
+                            <div class="form-hint-inline">题目越难，星星越多，小朋友答题后可获得对应奖励</div>
+                        </div>
+                    </div>
+
+                    <!-- 题目内容（富文本） -->
+                    <div class="form-row">
+                        <label class="form-label" style="vertical-align:top;"><span class="req">*</span>题目内容</label>
+                        <div class="form-control" style="max-width:680px;">
+                            <div class="re-toolbar">
+                                <span class="re-btn" data-cmd="bold" title="加粗" style="font-weight:bold;">B</span>
+                                <span class="re-btn" data-cmd="italic" title="斜体" style="font-style:italic;">I</span>
+                                <span class="re-btn" data-cmd="underline" title="下划线" style="text-decoration:underline;">U</span>
+                                <span class="re-btn" data-cmd="insertUnorderedList" title="无序列表">• 列表</span>
+                                <span class="re-btn" data-cmd="insertOrderedList" title="有序列表">1. 列表</span>
+                                <span class="re-btn" data-cmd="removeFormat" title="清除格式">清除</span>
+                                <span class="re-btn re-btn-img" title="插入图片">🖼 图片<input type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp"/></span>
+                            </div>
+                            <div id="editor" class="rich-editor" contenteditable="true"
+                                 data-placeholder="在这里输入题目内容，可以用上方工具栏排版～"></div>
+                        </div>
+                    </div>
+
+                    <!-- 提示与思路（选填，默认不展示，admin 可在列表页手动开启展示） -->
+                    <div class="form-row">
+                        <label class="form-label" style="vertical-align:top;">💡 提示与思路</label>
+                        <div class="form-control" style="max-width:680px;">
+                            <div class="re-toolbar">
+                                <span class="re-btn" data-cmd="bold" title="加粗" style="font-weight:bold;">B</span>
+                                <span class="re-btn" data-cmd="italic" title="斜体" style="font-style:italic;">I</span>
+                                <span class="re-btn" data-cmd="underline" title="下划线" style="text-decoration:underline;">U</span>
+                                <span class="re-btn" data-cmd="insertUnorderedList" title="无序列表">• 列表</span>
+                                <span class="re-btn" data-cmd="insertOrderedList" title="有序列表">1. 列表</span>
+                                <span class="re-btn" data-cmd="removeFormat" title="清除格式">清除</span>
+                                <span class="re-btn re-btn-img" title="插入图片">🖼 图片<input type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp"/></span>
+                            </div>
+                            <div id="hintEditor" class="rich-editor" contenteditable="true"
+                                 data-placeholder="选填：写一些解题提示或思路，保存后默认不展示。等有人答题后，你可以在题目列表手动开启展示～"></div>
+                            <div class="form-hint-inline">选填内容。保存后默认隐藏，答题者看不到。你可以在题目列表或答题详情页手动"展示提示"后，答题者才能看到。</div>
+                        </div>
+                    </div>
+
+                    <!-- 当前状态提示（仅编辑模式显示） -->
+                    <div class="form-actions" style="border-top:none; margin-top:0; padding-top:0; margin-bottom:14px;"
+                         th:if="${mode == 'edit' and question != null and question.status != null}">
+                        <div class="status-tip" th:if="${question.status == 'PUBLISHED'}">
+                            📌 当前状态：<b class="st-pub">已发布</b>（在大厅展示中）。
+                            点击「保存草稿」会把题目<b>下架</b>转为草稿；点击「发布到大厅」保持发布状态。
+                        </div>
+                        <div class="status-tip" th:if="${question.status == 'DRAFT'}">
+                            📌 当前状态：<b class="st-draft">草稿</b>（不在大厅展示）。
+                            点击「保存草稿」继续保存为草稿；点击「发布到大厅」会发布到大厅。
+                        </div>
+                    </div>
+
+                    <!-- 操作按钮 -->
+                    <div class="form-actions">
+                        <button type="submit" name="saveAction" value="DRAFT" class="btn btn-default">📝 保存草稿</button>
+                        <button type="submit" name="saveAction" value="PUBLISH" class="btn btn-primary">📢 发布到大厅</button>
+                        <a th:href="@{/bounty/admin/list}" class="btn btn-back" style="margin-left:10px;">← 返回列表</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/rich-editor.js}"></script>
+<script>
+    // 初始化富文本编辑器（题目内容 + 提示与思路）
+    initRichEditor('editor', 'contentHidden');
+    initRichEditor('hintEditor', 'hintHidden');
+
+    // 星星选择器：未选中 ☆（空心灰），选中 ⭐（实心黄），视觉对比明显
+    (function () {
+        var hidden = document.getElementById('starCount');
+        var picker = document.getElementById('starPicker');
+        var opts = picker.querySelectorAll('.star-opt');
+        var cur = parseInt(hidden.value) || 3;
+        var FULL = '⭐', EMPTY = '☆';
+        function render(n) {
+            opts.forEach(function (o) {
+                var val = parseInt(o.getAttribute('data-val'));
+                var on = val <= n;
+                o.classList.toggle('active', on);
+                o.textContent = on ? FULL : EMPTY;
+            });
+        }
+        render(cur);
+        opts.forEach(function (o) {
+            o.addEventListener('click', function () {
+                var v = parseInt(o.getAttribute('data-val'));
+                hidden.value = v;
+                render(v);
+            });
+            o.addEventListener('mouseenter', function () {
+                render(parseInt(o.getAttribute('data-val')));
+            });
+        });
+        picker.addEventListener('mouseleave', function () {
+            render(parseInt(hidden.value) || 0);
+        });
+    })();
+</script>
+</body>
+</html>

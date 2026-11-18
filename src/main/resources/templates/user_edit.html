@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>编辑用户 - 数学教学后台</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="layout">
+    <!-- 侧边栏 -->
+    <nav th:replace="layout/common :: sidebar('user')"></nav>
+
+    <!-- 主区域 -->
+    <div class="main">
+        <header th:replace="layout/common :: header('用户管理 / 编辑用户')"></header>
+
+        <div class="content">
+            <div class="card">
+                <div class="card-title">编辑用户</div>
+
+                <!-- 操作提示 -->
+                <div th:if="${msg != null}" class="msg"
+                     th:classappend="${msgType == 'success' ? 'msg-success' : 'msg-error'}"
+                     th:text="${msg}">提示</div>
+
+                <form th:action="@{/user/edit}" method="post" class="form">
+                    <input type="hidden" name="id" th:value="${targetUser.id}"/>
+                    <div class="form-row">
+                        <label class="form-label">用户名</label>
+                        <div class="form-control">
+                            <input type="text" th:value="${targetUser.username}" readonly="readonly"/>
+                            <div class="form-hint-inline">用户名不可修改</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label">昵称</label>
+                        <div class="form-control">
+                            <input type="text" name="nickname"
+                                   th:value="${targetUser.nickname}" placeholder="选填，如：小明"/>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label"><span class="req">*</span>角色</label>
+                        <div class="form-control">
+                            <!-- admin 超管角色固定不可改（防止唯一管理员被降级） -->
+                            <input th:if="${targetUser.username == 'admin'}" type="text"
+                                   value="ADMIN（管理员）" readonly="readonly"/>
+                            <select th:unless="${targetUser.username == 'admin'}" name="role">
+                                <option value="STUDENT" th:selected="${targetUser.role == 'STUDENT'}">学生（STUDENT）</option>
+                                <option value="TEACHER" th:selected="${targetUser.role == 'TEACHER'}">教师（TEACHER）</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label"><span class="req">*</span>状态</label>
+                        <div class="form-control">
+                            <select name="status">
+                                <option value="1" th:selected="${targetUser.status == 1}">启用</option>
+                                <option value="0" th:selected="${targetUser.status != null and targetUser.status == 0}">禁用</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">💾 保存修改</button>
+                        <a th:href="@{/user/list}" class="btn btn-default">← 返回列表</a>
+                    </div>
+                    <div class="form-hint">
+                        仅可修改昵称和角色。如需修改密码，请返回列表点"🔑 重置密码"。
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

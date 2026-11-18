@@ -18,29 +18,57 @@
         <div class="content">
             <div class="card">
                 <div class="card-title">添加用户</div>
-                <form th:action="@{/user/add}" th:object="${user}" method="post">
-                    <div class="form-group">
-                        <label>用户名</label>
-                        <input type="text" th:field="*{username}" required="required" placeholder="登录用户名"/>
+                <div th:if="${msg != null}" class="msg"
+                     th:classappend="${msgType == 'success' ? 'msg-success' : 'msg-error'}"
+                     th:text="${msg}">提示</div>
+                <form th:action="@{/user/add}" th:object="${user}" method="post" class="form">
+                    <div class="form-row">
+                        <label class="form-label"><span class="req">*</span>用户名</label>
+                        <div class="form-control">
+                            <input type="text" th:field="*{username}" required="required" placeholder="登录用户名，全局唯一"/>
+                            <div class="form-hint-inline">创建后不可修改，且全局唯一</div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>密码</label>
-                        <input type="password" th:field="*{password}" required="required" placeholder="初始密码（将加密存储）"/>
+                    <div class="form-row">
+                        <label class="form-label"><span class="req">*</span>密码</label>
+                        <div class="form-control">
+                            <input type="password" th:field="*{password}" required="required" placeholder="初始密码"/>
+                            <div class="form-hint-inline">将使用 BCrypt 加密存储</div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>昵称</label>
-                        <input type="text" th:field="*{nickname}" placeholder="选填"/>
+                    <div class="form-row">
+                        <label class="form-label">昵称</label>
+                        <div class="form-control">
+                            <input type="text" th:field="*{nickname}" placeholder="选填，如：小明"/>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>角色</label>
-                        <select th:field="*{role}">
-                            <option value="USER">USER（普通用户）</option>
-                            <option value="ADMIN">ADMIN（管理员）</option>
-                        </select>
+                    <div class="form-row">
+                        <label class="form-label"><span class="req">*</span>角色</label>
+                        <div class="form-control">
+                            <select th:field="*{role}">
+                                <option value="STUDENT">学生（STUDENT）</option>
+                                <option value="TEACHER">教师（TEACHER）</option>
+                            </select>
+                            <div class="form-hint-inline">管理员账号唯一，不可在此创建</div>
+                        </div>
                     </div>
-                    <button type="submit" class="btn">保 存</button>
-                    <a th:href="@{/user/list}" class="back-link">返回列表</a>
-                    <div class="form-tip">密码会使用 BCrypt 加密后存入数据库，无法逆向还原。</div>
+                    <div class="form-row">
+                        <label class="form-label"><span class="req">*</span>状态</label>
+                        <div class="form-control">
+                            <select th:field="*{status}">
+                                <option value="1">启用</option>
+                                <option value="0">禁用</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">💾 保 存</button>
+                        <a th:href="@{/user/list}" class="btn btn-default">← 返回列表</a>
+                    </div>
+                    <div class="form-hint">
+                        密码会使用 BCrypt 加密后存入数据库，无法逆向还原。<br/>
+                        用户名创建后不可修改，请谨慎填写。
+                    </div>
                 </form>
             </div>
         </div>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title>答题详情 - 数学小乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('my-answers')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('我的答题 / 详情')"></header>
+
+        <div class="content">
+            <!-- 题目信息 -->
+            <div class="card">
+                <div class="card-title">📝 题目信息</div>
+                <div style="margin-bottom: 12px;">
+                    <span th:if="${question.questionType == 'CALC'}" class="type-tag calc">计算题</span>
+                    <span th:if="${question.questionType == 'APPLICATION'}" class="type-tag application">应用题</span>
+                    <span th:if="${question.questionType == 'ORAL'}" class="type-tag oral">口算题</span>
+                    <span class="star-display" style="margin-left:10px;">
+                        悬赏 <span th:each="i : ${#numbers.sequence(1, question.starCount)}">⭐</span>
+                    </span>
+                </div>
+                <h3 style="color:#333;margin-bottom:12px;" th:text="${question.title}">题目标题</h3>
+                <div class="rich-content" th:utext="${question.content}">题目内容</div>
+            </div>
+
+            <!-- 提示与思路（仅当用户已答过此题 且 题目设置了展示提示 且 有内容时才展示）
+                 详情页 hasAnswered 恒为 true（校验 answerUserId==me.id），所以这里按 hintVisible 展示 -->
+            <div class="card hint-card"
+                 th:if="${hasAnswered == true and question.hintVisible == 1 and question.hintContent != null and !question.hintContent.isEmpty()}">
+                <div class="card-title">💡 提示与思路</div>
+                <div class="rich-content" th:utext="${question.hintContent}">提示内容</div>
+            </div>
+
+            <!-- 我的答案 -->
+            <div class="card">
+                <div class="card-title">✏️ 我的答案</div>
+                <div style="color:#888;font-size:13px;margin-bottom:10px;">
+                    提交时间：<b th:text="${answer.submitTime != null ? #temporals.format(answer.submitTime, 'yyyy-MM-dd HH:mm:ss') : '-'}">时间</b>
+                </div>
+                <div class="rich-content" th:utext="${answer.answerContent}">我的答案</div>
+            </div>
+
+            <!-- 评分结果 -->
+            <div class="card">
+                <div class="card-title">⭐ 评分结果</div>
+                <div th:if="${answer.scoreStatus == 'SCORED'}" style="text-align:center;padding:20px;">
+                    <div class="star-display" style="font-size:36px;">
+                        <span th:each="i : ${#numbers.sequence(1, answer.score)}">⭐</span>
+                    </div>
+                    <div style="margin-top:10px;font-size:18px;color:#fa8c16;font-weight:bold;">
+                        获得 <span th:text="${answer.score}">0</span> 颗星星！
+                    </div>
+                    <div style="color:#999;font-size:13px;margin-top:6px;"
+                         th:text="${answer.scoreTime != null ? '评分时间：' + #temporals.format(answer.scoreTime, 'yyyy-MM-dd HH:mm') : ''}">
+                        评分时间
+                    </div>
+                </div>
+                <div th:if="${answer.scoreStatus != 'SCORED'}" style="text-align:center;padding:30px;color:#fa8c16;">
+                    <div style="font-size:32px;">⏳</div>
+                    <div style="margin-top:10px;font-size:16px;">老师还在评分中，耐心等待哦～</div>
+                </div>
+            </div>
+
+            <!-- ============ 同学们的回答（同一道题，已评分的其他用户答题） ============ -->
+            <!-- 仅当用户已答过此题（能进入详情页即代表已答）时才展示，互相学习 -->
+            <div class="card" th:if="${otherAnswers != null and !otherAnswers.isEmpty()}">
+                <div class="card-title">👨‍🎓 同学们的回答</div>
+                <div style="color:#888;font-size:13px;margin-bottom:14px;margin-top:-8px;">
+                    看看其他小朋友对这道题是怎么答的，互相学习进步吧～（仅展示已评分的回答）
+                </div>
+
+                <div th:each="oa : ${otherAnswers}" class="others-answer-item">
+                    <div class="oai-head">
+                        <span class="oai-user">
+                            👤 <span th:text="${otherUserMap[oa.answerUserId] != null
+                                        ? (otherUserMap[oa.answerUserId].nickname != null
+                                            ? otherUserMap[oa.answerUserId].nickname
+                                            : otherUserMap[oa.answerUserId].username)
+                                        : '未知小朋友'}">小朋友昵称</span>
+                        </span>
+                        <span class="oai-meta">
+                            <span th:if="${oa.scoreTime != null}"
+                                  th:text="'评分于 ' + ${#temporals.format(oa.scoreTime, 'yyyy-MM-dd HH:mm')}">时间</span>
+                        </span>
+                    </div>
+                    <div class="oai-preview" th:utext="${oa.textPreview != null ? oa.textPreview : '(无内容)'}">
+                        答题内容预览
+                    </div>
+                    <div class="oai-foot">
+                        <span style="color:#999;font-size:12px;">
+                            <span th:if="${oa.submitTime != null}"
+                                  th:text="'提交于 ' + ${#temporals.format(oa.submitTime, 'yyyy-MM-dd HH:mm')}">提交时间</span>
+                        </span>
+                        <span class="oai-stars">
+                            <span th:each="i : ${#numbers.sequence(1, oa.score)}">⭐</span>
+                            <span style="color:#888;font-size:12px;margin-left:4px;"
+                                  th:text="'(' + ${oa.score} + '星)'">(3星)</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 没有其他同学答题时的提示（已答过此题但还没有其他已评分的回答） -->
+            <div class="card" th:if="${otherAnswers == null or otherAnswers.isEmpty()}">
+                <div class="card-title">👨‍🎓 同学们的回答</div>
+                <div style="text-align:center;color:#999;padding:30px;">
+                    🤫 这道题暂时还没有其他小朋友的回答被评分哦，你是最棒的第一批答题者！
+                </div>
+            </div>
+
+            <div style="margin-top:18px;">
+                <a th:href="@{/bounty/my-answers}" class="btn btn-default">← 返回我的答题</a>
+                <a th:href="@{/bounty/hall}" class="btn btn-back" style="margin-left:10px;">🏠 去大厅答题</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

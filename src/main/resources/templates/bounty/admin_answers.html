@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title>答题情况 - 数学小乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('bounty-admin')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('悬赏管理 / 答题情况')"></header>
+
+        <div class="content">
+            <div th:if="${msg != null}" class="msg"
+                 th:classappend="${msgType == 'success' ? 'msg-success' : 'msg-error'}"
+                 th:text="${msg}">提示</div>
+
+            <!-- 题目信息 -->
+            <div class="card">
+                <div class="card-title">📝 题目信息</div>
+                <div style="margin-bottom: 12px;">
+                    <span th:if="${question.questionType == 'CALC'}" class="type-tag calc">计算题</span>
+                    <span th:if="${question.questionType == 'APPLICATION'}" class="type-tag application">应用题</span>
+                    <span th:if="${question.questionType == 'ORAL'}" class="type-tag oral">口算题</span>
+                    <span class="star-display" style="margin-left:10px;">
+                        悬赏 <span th:each="i : ${#numbers.sequence(1, question.starCount)}">⭐</span>
+                    </span>
+                </div>
+                <h3 style="color:#333;margin-bottom:12px;" th:text="${question.title}">题目标题</h3>
+                <div class="rich-content" th:utext="${question.content}">题目内容</div>
+                <!-- admin 可见的提示内容 + 切换展示按钮 -->
+                <div th:if="${question.hintContent != null and !question.hintContent.isEmpty()}"
+                     style="margin-top:16px;padding:14px;background:#fffbe6;border-radius:8px;border:1px solid #ffe58f;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+                        <div style="font-weight:bold;color:#d48806;">💡 提示与思路（仅管理员可见）</div>
+                        <form th:action="@{/bounty/admin/toggle-hint}" method="post" style="display:inline;">
+                            <input type="hidden" name="id" th:value="${question.id}"/>
+                            <input type="hidden" name="from" value="answers"/>
+                            <button type="submit" class="btn-sm btn-hint-show" th:if="${question.hintVisible != 1}">💡 展示给答题者</button>
+                            <button type="submit" class="btn-sm btn-hint-hide" th:if="${question.hintVisible == 1}">🙈 隐藏提示</button>
+                        </form>
+                    </div>
+                    <div class="rich-content" th:utext="${question.hintContent}">提示内容</div>
+                    <div th:if="${question.hintVisible == 1}" style="color:#52c41a;font-size:13px;margin-top:8px;">✅ 当前已展示，答题者可以看到提示</div>
+                    <div th:if="${question.hintVisible != 1}" style="color:#999;font-size:13px;margin-top:8px;">🔇 当前已隐藏，答题者看不到提示</div>
+                </div>
+            </div>
+
+            <!-- 答题列表 -->
+            <div class="card">
+                <div class="card-title">👁 答题情况（共 <span th:text="${answers != null ? answers.size() : 0}">0</span> 人答题）</div>
+
+                <div th:if="${answers == null or answers.isEmpty()}"
+                     style="text-align:center;color:#999;padding:40px;">
+                    😶 还没有小朋友答题哦～
+                </div>
+
+                <!-- 每条答题一个区块 -->
+                <div th:each="a : ${answers}" style="background:#fafafa;border-radius:8px;padding:16px;margin-bottom:16px;border:1px solid #f0f0f0;">
+                    <!-- 答题人信息行 -->
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+                        <div>
+                            <b>🙋
+                                <span th:text="${userMap[a.answerUserId] != null ? (userMap[a.answerUserId].nickname != null ? userMap[a.answerUserId].nickname : userMap[a.answerUserId].username) : '未知用户'}">用户</span>
+                            </b>
+                            <span style="color:#999;margin-left:10px;font-size:13px;"
+                                  th:text="'提交于 ' + ${a.submitTime != null ? #temporals.format(a.submitTime, 'yyyy-MM-dd HH:mm') : '-'}">
+                                时间
+                            </span>
+                        </div>
+                        <span th:if="${a.scoreStatus == 'UNSCORED'}" class="tag tag-unscored">⏳ 待评分</span>
+                        <span th:if="${a.scoreStatus == 'SCORED'}" class="tag tag-scored">
+                            ✅ 已评分
+                            <span class="star-display"><span th:each="i : ${#numbers.sequence(1, a.score)}">⭐</span></span>
+                        </span>
+                    </div>
+
+                    <!-- 答题内容 -->
+                    <div class="rich-content" th:utext="${a.answerContent}">答案内容</div>
+
+                    <!-- 评分表单 -->
+                    <form th:action="@{/bounty/admin/score}" method="post"
+                          style="margin-top:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <input type="hidden" name="answerId" th:value="${a.id}"/>
+                        <span style="color:#666;font-size:13px;font-weight:bold;">评分：</span>
+                        <select name="score" style="padding:5px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;">
+                            <option value="5" th:selected="${a.score != null and a.score == 5}">⭐⭐⭐⭐⭐ 满分</option>
+                            <option value="4" th:selected="${a.score != null and a.score == 4}">⭐⭐⭐⭐ 优秀</option>
+                            <option value="3" th:selected="${a.score != null and a.score == 3}">⭐⭐⭐ 良好</option>
+                            <option value="2" th:selected="${a.score != null and a.score == 2}">⭐⭐ 加油</option>
+                            <option value="1" th:selected="${a.score != null and a.score == 1}">⭐ 需努力</option>
+                            <option value="0" th:selected="${a.score != null and a.score == 0}">无星 待重做</option>
+                        </select>
+                        <button type="submit" class="btn-sm btn-edit">
+                            <span th:if="${a.scoreStatus == 'SCORED'}">重新评分</span>
+                            <span th:if="${a.scoreStatus != 'SCORED'}">确认评分</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div style="margin-top:18px;">
+                <a th:href="@{/bounty/admin/list}" class="btn btn-default">← 返回悬赏列表</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

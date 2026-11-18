@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title>我的答题 - 数学小乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('my-answers')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('我的答题')"></header>
+
+        <div class="content">
+            <div th:if="${msg != null}" class="msg"
+                 th:classappend="${msgType == 'success' ? 'msg-success' : 'msg-error'}"
+                 th:text="${msg}">提示</div>
+
+            <div class="card">
+                <div class="card-title">📝 我的答题记录</div>
+
+                <table class="table" th:if="${answers != null and !answers.isEmpty()}">
+                    <thead>
+                    <tr>
+                        <th>题目标题</th>
+                        <th>类型</th>
+                        <th>悬赏</th>
+                        <th>提交时间</th>
+                        <th>评分状态</th>
+                        <th>获得星星</th>
+                        <th width="120">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="a : ${answers}">
+                        <td>
+                            <a th:if="${qMap[a.questionId] != null}"
+                               th:href="@{/bounty/my-answer(id=${a.id})}"
+                               style="color:#1890ff;text-decoration:none;font-weight:500;"
+                               th:text="${qMap[a.questionId].title}">标题</a>
+                            <span th:if="${qMap[a.questionId] == null}" style="color:#999;">(题目已删除)</span>
+                        </td>
+                        <td>
+                            <span th:if="${qMap[a.questionId] != null and qMap[a.questionId].questionType == 'CALC'}" class="type-tag calc">计算题</span>
+                            <span th:if="${qMap[a.questionId] != null and qMap[a.questionId].questionType == 'APPLICATION'}" class="type-tag application">应用题</span>
+                            <span th:if="${qMap[a.questionId] != null and qMap[a.questionId].questionType == 'ORAL'}" class="type-tag oral">口算题</span>
+                        </td>
+                        <td>
+                            <span th:if="${qMap[a.questionId] != null}" class="star-display">
+                                <span th:each="i : ${#numbers.sequence(1, qMap[a.questionId].starCount)}">⭐</span>
+                            </span>
+                        </td>
+                        <td th:text="${a.submitTime != null ? #temporals.format(a.submitTime, 'yyyy-MM-dd HH:mm') : '-'}">时间</td>
+                        <td>
+                            <span th:if="${a.scoreStatus == 'UNSCORED'}" class="tag tag-unscored">⏳ 待评分</span>
+                            <span th:if="${a.scoreStatus == 'SCORED'}" class="tag tag-scored">✅ 已评分</span>
+                        </td>
+                        <td>
+                            <span th:if="${a.scoreStatus == 'SCORED'}" class="star-display">
+                                <span th:each="i : ${#numbers.sequence(1, a.score)}">⭐</span>
+                                <span style="color:#888;font-size:12px;margin-left:4px;" th:text="'(' + ${a.score} + '星)'">(3星)</span>
+                            </span>
+                            <span th:if="${a.scoreStatus != 'SCORED'}" style="color:#ccc;">—</span>
+                        </td>
+                        <td class="actions">
+                            <a th:href="@{/bounty/my-answer(id=${a.id})}" class="btn-sm btn-edit">👁 查看详情</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div th:if="${answers == null or answers.isEmpty()}"
+                     style="text-align:center;color:#999;padding:40px;">
+                    😶 你还没有答过题哦，去 <a th:href="@{/bounty/hall}" style="color:#1890ff;">悬赏大厅</a> 看看吧！
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -36,6 +36,13 @@ spring:
   application:
     name: math-website
 
+  # ---------- 文件上传（富文本图片） ----------
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 10MB
+
 # ---------- MyBatis-Plus ----------
 mybatis-plus:
   # Mapper XML 文件位置（无 XML 也可，纯注解/BaseMapper 即可用）

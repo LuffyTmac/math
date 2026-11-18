@@ -5,6 +5,107 @@
     <meta charset="UTF-8">
     <title>用户列表 - 数学教学后台</title>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <style>
+        /* ============ 删除确认弹框（卡通 + 数学元素） ============ */
+        .modal-mask {
+            display: none;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 9999;
+            align-items: center; justify-content: center;
+        }
+        .modal-mask.show { display: flex; animation: fadeIn 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-card {
+            background: linear-gradient(160deg, #ffffff 0%, #fffaf2 100%);
+            width: 380px;
+            padding: 34px 30px 26px;
+            border-radius: 24px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: popIn 0.3s ease;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.85); opacity: 0; }
+            to   { transform: scale(1);    opacity: 1; }
+        }
+
+        /* 漂浮的数学符号装饰 */
+        .modal-symbol {
+            position: absolute;
+            opacity: 0.16;
+            font-size: 42px;
+            animation: floatUp 5s ease-in-out infinite;
+            user-select: none;
+        }
+        .ms1 { top: 12px; left: 18px; }
+        .ms2 { bottom: 14px; right: 20px; animation-delay: 1s; }
+        @keyframes floatUp {
+            0%, 100% { transform: translateY(0) rotate(-8deg); }
+            50%      { transform: translateY(-12px) rotate(8deg); }
+        }
+
+        .modal-emoji {
+            font-size: 58px;
+            display: inline-block;
+            animation: wobble 2s ease-in-out infinite;
+        }
+        @keyframes wobble {
+            0%, 100% { transform: rotate(0deg); }
+            25%      { transform: rotate(-10deg); }
+            75%      { transform: rotate(10deg); }
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-top: 8px;
+        }
+        .modal-text {
+            font-size: 14px;
+            color: #5a6473;
+            line-height: 1.7;
+            margin: 12px 0 22px;
+        }
+        .modal-text b { color: #1890ff; }
+        .modal-text .warn { color: #e74c3c; font-weight: bold; }
+
+        .modal-btns { display: flex; gap: 12px; }
+        .m-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .m-cancel { background: #eef2f7; color: #5a6473; }
+        .m-cancel:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.1); }
+        .m-confirm { background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%); color: #fff; }
+        .m-confirm:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(255,107,107,0.4); }
+
+        /* admin 超管删除按钮禁用态 */
+        .btn-del-disabled {
+            background: #f0f0f0 !important;
+            color: #bbb !important;
+            cursor: not-allowed;
+        }
+
+        /* 编辑按钮 */
+        .btn-edit { background: #1890ff; }
+        .btn-edit:hover { background: #40a9ff; }
+        .btn-edit-disabled {
+            background: #f0f0f0 !important;
+            color: #bbb !important;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 <body>
 <div class="layout">
@@ -18,9 +119,21 @@
         <div class="content">
             <div class="card">
                 <div class="card-title">用户列表</div>
-                <div class="toolbar">
-                    <a th:href="@{/user/add}" class="btn">+ 添加用户</a>
-                </div>
+
+                <!-- 搜索栏 -->
+                <form th:action="@{/user/list}" method="get" class="search-bar">
+                    <input type="text" name="keyword" th:value="${keyword}" placeholder="搜索用户名 / 昵称"/>
+                    <button type="submit" class="btn btn-search">🔍 搜索</button>
+                    <a th:href="@{/user/list}" class="btn btn-back">重置</a>
+                    <a th:href="@{/user/add}" class="btn btn-add">+ 添加用户</a>
+                </form>
+
+                <!-- 操作提示 -->
+                <div th:if="${msg != null}" class="msg"
+                     th:classappend="${msgType == 'success' ? 'msg-success' : 'msg-error'}"
+                     th:text="${msg}">提示</div>
+
+                <!-- 用户表格 -->
                 <table class="table">
                     <thead>
                     <tr>
@@ -28,7 +141,9 @@
                         <th>用户名</th>
                         <th>昵称</th>
                         <th>角色</th>
+                        <th>状态</th>
                         <th>创建时间</th>
+                        <th width="220">操作</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -37,16 +152,127 @@
                         <td th:text="${u.username}">用户名</td>
                         <td th:text="${u.nickname != null ? u.nickname : '-'}">昵称</td>
                         <td>
-                            <span th:if="${u.role == 'ADMIN'}" class="tag tag-admin" th:text="${u.role}">ADMIN</span>
-                            <span th:unless="${u.role == 'ADMIN'}" class="tag tag-user" th:text="${u.role}">USER</span>
+                            <span th:if="${u.role == 'ADMIN'}" class="tag tag-admin">管理员</span>
+                            <span th:if="${u.role == 'TEACHER'}" class="tag tag-teacher">教师</span>
+                            <span th:if="${u.role == 'STUDENT'}" class="tag tag-student">学生</span>
+                            <span th:if="${u.role != 'ADMIN' and u.role != 'TEACHER' and u.role != 'STUDENT'}" class="tag tag-student" th:text="${u.role}">未知</span>
+                        </td>
+                        <td>
+                            <span th:if="${u.status == 1}" class="tag tag-enabled">启用</span>
+                            <span th:unless="${u.status == 1}" class="tag tag-disabled">禁用</span>
                         </td>
                         <td th:text="${u.createTime != null ? #temporals.format(u.createTime, 'yyyy-MM-dd HH:mm') : '-'}">时间</td>
+                        <td class="actions">
+                            <!-- 编辑：不能编辑当前登录的自己（避免锁死），其他账号（含 ADMIN 角色）均可编辑 -->
+                            <a th:if="${#authentication.name != u.username}" th:href="@{/user/edit(id=${u.id})}" class="btn-sm btn-edit">✏️ 编辑</a>
+                            <span th:if="${#authentication.name == u.username}" class="btn-sm btn-edit-disabled" title="不能编辑自己">✏️ 编辑</span>
+                            <a th:href="@{/user/reset-password(id=${u.id})}" class="btn-sm btn-reset">🔑 重置密码</a>
+                            <!-- admin 超管永远不可删除：显示禁用态按钮 -->
+                            <span th:if="${u.username == 'admin'}" class="btn-sm btn-del-disabled" title="超级管理员不可删除">🗑 删除</span>
+                            <!-- 其他账号可删除：点击弹出卡通确认框 -->
+                            <form th:unless="${u.username == 'admin'}"
+                                  th:action="@{/user/delete/{id}(id=${u.id})}" method="post"
+                                  class="inline-form" th:id="'del-form-' + ${u.id}">
+                                <button type="button" class="btn-sm btn-del"
+                                        th:data-name="${u.username}"
+                                        th:data-form="'del-form-' + ${u.id}"
+                                        onclick="showDeleteConfirm(this.getAttribute('data-name'), this.getAttribute('data-form'))">
+                                    🗑 删除
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${users == null or users.isEmpty()}">
+                        <td colspan="7" class="empty">😶 没有找到符合条件的用户～</td>
                     </tr>
                     </tbody>
                 </table>
+
+                <!-- 分页栏 -->
+                <div class="pager" th:if="${pages > 0}">
+                    <span class="pager-info">
+                        共 <b th:text="${total}">0</b> 条，第
+                        <b th:text="${current}">1</b> / <b th:text="${pages}">1</b> 页
+                    </span>
+                    <div class="pager-size">
+                        每页
+                        <select onchange="window.location.href=this.value">
+                            <option th:value="@{/user/list(page=1,size=5,keyword=${keyword})}" th:selected="${size==5}">5</option>
+                            <option th:value="@{/user/list(page=1,size=10,keyword=${keyword})}" th:selected="${size==10}">10</option>
+                            <option th:value="@{/user/list(page=1,size=20,keyword=${keyword})}" th:selected="${size==20}">20</option>
+                            <option th:value="@{/user/list(page=1,size=50,keyword=${keyword})}" th:selected="${size==50}">50</option>
+                        </select>
+                        条
+                    </div>
+                    <div class="pager-links">
+                        <a th:if="${current > 1}"
+                           th:href="@{/user/list(page=${current - 1},size=${size},keyword=${keyword})}"
+                           class="pg">上一页</a>
+                        <span th:each="i : ${#numbers.sequence(1, pages)}" class="pg-wrap">
+                            <a th:href="@{/user/list(page=${i},size=${size},keyword=${keyword})}"
+                               th:text="${i}"
+                               th:classappend="${i == current} ? 'pg cur' : 'pg'">1</a>
+                        </span>
+                        <a th:if="${current < pages}"
+                           th:href="@{/user/list(page=${current + 1},size=${size},keyword=${keyword})}"
+                           class="pg">下一页</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- ============ 删除确认弹框（卡通 + 数学元素） ============ -->
+<div class="modal-mask" id="delModal">
+    <div class="modal-card">
+        <span class="modal-symbol ms1">➕</span>
+        <span class="modal-symbol ms2">➗</span>
+        <div class="modal-emoji">🤔</div>
+        <div class="modal-title">确定要擦掉吗？</div>
+        <div class="modal-text">
+            即将删除用户「<b id="delUserName"></b>」<br/>
+            这个操作就像用橡皮擦擦掉答案，<span class="warn">擦掉就回不来啦～</span>
+        </div>
+        <div class="modal-btns">
+            <button class="m-btn m-cancel" onclick="closeDeleteConfirm()">✖️ 再想想</button>
+            <button class="m-btn m-confirm" onclick="confirmDelete()">🗑 确认擦掉</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    var _delFormId = null;
+
+    // 弹出删除确认框：填入用户名，记录要提交的表单 id
+    function showDeleteConfirm(name, formId) {
+        document.getElementById('delUserName').textContent = name;
+        _delFormId = formId;
+        document.getElementById('delModal').classList.add('show');
+    }
+
+    // 关闭弹框
+    function closeDeleteConfirm() {
+        document.getElementById('delModal').classList.remove('show');
+        _delFormId = null;
+    }
+
+    // 确认删除：提交对应表单（POST，表单内 th:action 已自动注入 CSRF）
+    function confirmDelete() {
+        if (_delFormId) {
+            document.getElementById(_delFormId).submit();
+        }
+    }
+
+    // 点击遮罩区域关闭
+    document.getElementById('delModal').addEventListener('click', function (e) {
+        if (e.target === this) closeDeleteConfirm();
+    });
+
+    // 按 Esc 关闭
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeDeleteConfirm();
+    });
+</script>
 </body>
 </html>

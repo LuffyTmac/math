@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title>悬赏大厅 - 数学小乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('hall')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('悬赏大厅')"></header>
+
+        <div class="content">
+            <!-- 操作提示 -->
+            <div th:if="${msg != null}" class="msg"
+                 th:classappend="${msgType == 'success' ? 'msg-success' : 'msg-error'}"
+                 th:text="${msg}">提示</div>
+
+            <!-- 排序栏 -->
+            <div class="sort-bar">
+                <span>排序：</span>
+                <a th:href="@{/bounty/hall(sort='time',size=${size})}" th:classappend="${sort == 'time'} ? 'cur' : ''">🕐 最新发布</a>
+                <a th:href="@{/bounty/hall(sort='star',size=${size})}" th:classappend="${sort == 'star'} ? 'cur' : ''">⭐ 星星最多</a>
+            </div>
+
+            <!-- 题目卡片网格 -->
+            <div class="bounty-grid" th:if="${questions != null and !questions.isEmpty()}">
+                <div class="bounty-card" th:each="q : ${questions}">
+                    <div class="bc-head">
+                        <span th:if="${q.questionType == 'CALC'}" class="type-tag calc">计算题</span>
+                        <span th:if="${q.questionType == 'APPLICATION'}" class="type-tag application">应用题</span>
+                        <span th:if="${q.questionType == 'ORAL'}" class="type-tag oral">口算题</span>
+                        <span th:if="${q.hintVisible == 1}" class="hint-badge">💡 有提示</span>
+                        <span class="star-display">
+                            <span th:each="i : ${#numbers.sequence(1, q.starCount)}">⭐</span>
+                        </span>
+                    </div>
+                    <a class="bc-title" th:href="@{/bounty/answer(questionId=${q.id})}" th:text="${q.title}">题目标题</a>
+                    <div class="bc-preview" th:text="${q.textPreview}">题目内容预览...</div>
+                    <div class="bc-foot">
+                        <span class="bc-stat">🙋 <span th:text="${answerCounts[q.id]}">0</span> 人答题</span>
+                        <a sec:authorize="isAuthenticated()" th:href="@{/bounty/answer(questionId=${q.id})}" class="bc-btn">去答题 ✏️</a>
+                        <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="bc-btn">登录后答题</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 空数据 -->
+            <div class="card" th:if="${questions == null or questions.isEmpty()}"
+                 style="text-align:center;color:#999;padding:50px;">
+                😶 悬赏大厅还没有题目哦，敬请期待～
+            </div>
+
+            <!-- 分页 -->
+            <div class="pager" th:if="${pages > 0}">
+                <span class="pager-info">
+                    共 <b th:text="${total}">0</b> 道题，第
+                    <b th:text="${current}">1</b> / <b th:text="${pages}">1</b> 页
+                </span>
+                <div class="pager-size">
+                    每页
+                    <select onchange="window.location.href=this.value">
+                        <option th:value="@{/bounty/hall(page=1,size=6,sort=${sort})}" th:selected="${size==6}">6</option>
+                        <option th:value="@{/bounty/hall(page=1,size=9,sort=${sort})}" th:selected="${size==9}">9</option>
+                        <option th:value="@{/bounty/hall(page=1,size=12,sort=${sort})}" th:selected="${size==12}">12</option>
+                        <option th:value="@{/bounty/hall(page=1,size=18,sort=${sort})}" th:selected="${size==18}">18</option>
+                    </select>
+                    道
+                </div>
+                <div class="pager-links">
+                    <a th:if="${current > 1}"
+                       th:href="@{/bounty/hall(page=${current - 1},size=${size},sort=${sort})}"
+                       class="pg">上一页</a>
+                    <span th:each="i : ${#numbers.sequence(1, pages)}" class="pg-wrap">
+                        <a th:href="@{/bounty/hall(page=${i},size=${size},sort=${sort})}"
+                           th:text="${i}"
+                           th:classappend="${i == current} ? 'pg cur' : 'pg'">1</a>
+                    </span>
+                    <a th:if="${current < pages}"
+                       th:href="@{/bounty/hall(page=${current + 1},size=${size},sort=${sort})}"
+                       class="pg">下一页</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
