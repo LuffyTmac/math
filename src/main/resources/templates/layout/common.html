@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<!--
+  后台公用片段：侧边栏 + 顶部栏
+  各后台页面通过 th:replace 引入：
+    <nav th:replace="layout/common :: sidebar('index')"></nav>
+    <header th:replace="layout/common :: header('首页')"></header>
+-->
+<body>
+
+<!-- ========== 侧边栏：参数 active 标识当前菜单（index / user）========== -->
+<nav class="sidebar" th:fragment="sidebar(active)">
+    <div class="sidebar-logo">🧮 数学教学后台</div>
+    <ul class="menu">
+        <li><a th:href="@{/index}" class="menu-item" th:classappend="${active == 'index'} ? 'active' : ''">
+            <span class="mi">🏠</span> 首页
+        </a></li>
+        <li><a th:href="@{/user/list}" class="menu-item" th:classappend="${active == 'user'} ? 'active' : ''">
+            <span class="mi">👥</span> 用户管理
+        </a></li>
+        <li class="menu-section">教学管理</li>
+        <li><span class="menu-item disabled"><span class="mi">📚</span> 题目管理</span></li>
+        <li><span class="menu-item disabled"><span class="mi">📖</span> 课程管理</span></li>
+        <li><span class="menu-item disabled"><span class="mi">📊</span> 统计分析</span></li>
+    </ul>
+</nav>
+
+<!-- ========== 顶部栏：参数 title 为面包屑标题 ========== -->
+<header class="header" th:fragment="header(title)">
+    <div class="breadcrumb" th:text="${title}">标题</div>
+    <div class="user-area">
+        <span class="who">👤 <span sec:authentication="name">用户</span></span>
+        <form th:action="@{/logout}" method="post" class="logout-form">
+            <button type="submit" class="logout-btn">退出</button>
+        </form>
+    </div>
+</header>
+
+</body>
+</html>

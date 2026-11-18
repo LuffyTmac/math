@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>出错了 - 数学小乐园</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: "Comic Sans MS", "Microsoft YaHei", "PingFang SC", sans-serif;
+            min-height: 100vh;
+            /* 明亮柔和的渐变背景：天蓝 -> 浅青 -> 暖黄（与登录页一致） */
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 45%, #fdebb5 100%);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+
+        /* ---------- 背景漂浮的数学符号 ---------- */
+        .float-symbol {
+            position: absolute;
+            opacity: 0.5;
+            animation: floatUp 6s ease-in-out infinite;
+            user-select: none;
+        }
+        .fs1 { top: 12%;  left: 10%;  font-size: 40px; animation-delay: 0s;   }
+        .fs2 { top: 18%;  right: 12%; font-size: 52px; animation-delay: 1s;   }
+        .fs3 { bottom: 16%; left: 14%; font-size: 36px; animation-delay: 2s;  }
+        .fs4 { bottom: 22%; right: 10%; font-size: 44px; animation-delay: 0.5s;}
+        .fs5 { top: 48%;  left: 6%;   font-size: 32px; animation-delay: 1.5s; }
+        .fs6 { top: 58%;  right: 7%;  font-size: 46px; animation-delay: 2.5s; }
+        .fs7 { top: 8%;   left: 48%;  font-size: 28px; animation-delay: 3s;   }
+
+        @keyframes floatUp {
+            0%, 100% { transform: translateY(0) rotate(-6deg); }
+            50%      { transform: translateY(-22px) rotate(6deg); }
+        }
+
+        /* ---------- 错误卡片 ---------- */
+        .error-card {
+            background: #ffffff;
+            width: 460px;
+            padding: 40px 36px 32px;
+            border-radius: 28px;
+            box-shadow: 0 14px 34px rgba(91, 134, 229, 0.25);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            animation: popIn 0.5s ease;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+
+        .big-emoji {
+            font-size: 78px;
+            display: inline-block;
+            animation: shake 2.4s ease-in-out infinite;
+        }
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25%      { transform: rotate(-8deg); }
+            75%      { transform: rotate(8deg); }
+        }
+
+        .code {
+            font-size: 64px;
+            font-weight: bold;
+            line-height: 1;
+            margin-top: 6px;
+            background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .title {
+            font-size: 24px;
+            color: #ff6b6b;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .message {
+            font-size: 15px;
+            color: #5a6473;
+            line-height: 1.7;
+            margin-top: 12px;
+            margin-bottom: 26px;
+            padding: 0 6px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 13px 10px;
+            border: none;
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(255, 107, 107, 0.35);
+        }
+        .btn-secondary {
+            background: #eef2f7;
+            color: #5a6473;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(91, 134, 229, 0.18);
+        }
+        .btn:active { transform: translateY(0); }
+
+        .footer-tip {
+            margin-top: 22px;
+            font-size: 13px;
+            color: #b8c2cc;
+        }
+
+        /* 退出表单做成内联按钮样式 */
+        .logout-form { display: inline-flex; flex: 1; margin: 0; }
+        .logout-form .btn { width: 100%; }
+    </style>
+</head>
+<body>
+
+    <!-- 背景漂浮的数学符号装饰 -->
+    <span class="float-symbol fs1">➕</span>
+    <span class="float-symbol fs2">🔢</span>
+    <span class="float-symbol fs3">⭐</span>
+    <span class="float-symbol fs4">➗</span>
+    <span class="float-symbol fs5">📐</span>
+    <span class="float-symbol fs6">✖️</span>
+    <span class="float-symbol fs7">✏️</span>
+
+    <div class="error-card">
+        <div class="big-emoji" th:text="${emoji}">🤖</div>
+        <div class="code" th:text="${code}">500</div>
+        <div class="title" th:text="${title}">出了点小状况</div>
+        <div class="message" th:text="${message}">好像遇到了一点小问题～</div>
+
+        <div class="btn-group">
+            <a th:href="@{/login}" class="btn btn-primary">🏠 回到登录页</a>
+            <form th:action="@{/logout}" method="post" class="logout-form">
+                <button type="submit" class="btn btn-secondary">🚪 安全退出</button>
+            </form>
+        </div>
+
+        <div class="footer-tip">三年级数学 · 快乐学习</div>
+    </div>
+
+</body>
+</html>

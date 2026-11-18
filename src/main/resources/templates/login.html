@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>登录 - 数学小乐园</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: "Comic Sans MS", "Microsoft YaHei", "PingFang SC", sans-serif;
+            min-height: 100vh;
+            /* 明亮柔和的渐变背景：天蓝 -> 浅青 -> 暖黄 */
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 45%, #fdebb5 100%);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+
+        /* ---------- 背景漂浮的数学符号 ---------- */
+        .float-symbol {
+            position: absolute;
+            opacity: 0.55;
+            animation: floatUp 6s ease-in-out infinite;
+            user-select: none;
+        }
+        .fs1 { top: 12%;  left: 10%;  font-size: 40px; animation-delay: 0s;   }
+        .fs2 { top: 18%;  right: 12%; font-size: 52px; animation-delay: 1s;   }
+        .fs3 { bottom: 16%; left: 14%; font-size: 36px; animation-delay: 2s;  }
+        .fs4 { bottom: 22%; right: 10%; font-size: 44px; animation-delay: 0.5s;}
+        .fs5 { top: 48%;  left: 6%;   font-size: 32px; animation-delay: 1.5s; }
+        .fs6 { top: 58%;  right: 7%;  font-size: 46px; animation-delay: 2.5s; }
+        .fs7 { top: 8%;   left: 48%;  font-size: 28px; animation-delay: 3s;   }
+
+        @keyframes floatUp {
+            0%, 100% { transform: translateY(0) rotate(-6deg); }
+            50%      { transform: translateY(-22px) rotate(6deg); }
+        }
+
+        /* ---------- 登录卡片 ---------- */
+        .login-card {
+            background: #ffffff;
+            width: 370px;
+            padding: 36px 34px 30px;
+            border-radius: 28px;
+            box-shadow: 0 14px 34px rgba(91, 134, 229, 0.25);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            animation: popIn 0.5s ease;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+
+        .logo {
+            font-size: 58px;
+            display: inline-block;
+            animation: bounce 2.2s ease-in-out infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-10px); }
+        }
+
+        .title {
+            font-size: 27px;
+            color: #ff6b6b;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: #9aa5b1;
+            margin-top: 4px;
+            margin-bottom: 22px;
+        }
+
+        /* ---------- 提示信息 ---------- */
+        .msg {
+            padding: 9px 12px;
+            border-radius: 14px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        .msg.error   { background: #ffe5e5; color: #e74c3c; }
+        .msg.success { background: #e3f7e8; color: #27ae60; }
+
+        /* ---------- 输入框 ---------- */
+        .input-group {
+            position: relative;
+            margin-bottom: 16px;
+        }
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 13px 14px 13px 44px;
+            border: 2px solid #eef2f7;
+            border-radius: 16px;
+            font-size: 16px;
+            background: #f9fbff;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .input-group input::placeholder { color: #b8c2cc; }
+        .input-group input:focus {
+            outline: none;
+            border-color: #54a0ff;
+            background: #ffffff;
+        }
+
+        /* ---------- 登录按钮 ---------- */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
+            color: #ffffff;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(255, 107, 107, 0.35);
+        }
+        .btn:active { transform: translateY(0); }
+
+        .footer-tip {
+            margin-top: 18px;
+            font-size: 13px;
+            color: #b8c2cc;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 背景漂浮的数学符号装饰 -->
+    <span class="float-symbol fs1">➕</span>
+    <span class="float-symbol fs2">🔢</span>
+    <span class="float-symbol fs3">⭐</span>
+    <span class="float-symbol fs4">➗</span>
+    <span class="float-symbol fs5">📐</span>
+    <span class="float-symbol fs6">✖️</span>
+    <span class="float-symbol fs7">✏️</span>
+
+    <div class="login-card">
+        <div class="logo">🧮</div>
+        <div class="title">数学小乐园</div>
+        <div class="subtitle">快来一起学数学吧～</div>
+
+        <div class="msg error" th:if="${param.error}">
+            😯 哎呀，名字或密码不对哦，再试试看！
+        </div>
+        <div class="msg success" th:if="${param.logout}">
+            👋 拜拜～下次再来玩哦！
+        </div>
+
+        <form th:action="@{/login}" method="post">
+            <div class="input-group">
+                <span class="input-icon">🙋</span>
+                <input type="text" name="username" placeholder="你的名字" required="required" autofocus="autofocus"/>
+            </div>
+            <div class="input-group">
+                <span class="input-icon">🔑</span>
+                <input type="password" name="password" placeholder="秘密密码" required="required"/>
+            </div>
+            <button type="submit" class="btn">🚀 开始探险</button>
+        </form>
+
+        <div class="footer-tip">三年级数学 · 快乐学习</div>
+    </div>
+
+</body>
+</html>

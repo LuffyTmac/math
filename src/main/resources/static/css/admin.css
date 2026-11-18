@@ -1,0 +1,212 @@
+/* ============================================================
+   数学教学后台 - 公用样式（现代扁平化管理后台）
+   ============================================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: "Microsoft YaHei", "PingFang SC", -apple-system, sans-serif;
+    background: #f0f2f5;
+    color: #333;
+    font-size: 14px;
+}
+
+a { text-decoration: none; color: #1890ff; }
+
+/* ---------- 整体布局 ---------- */
+.layout { display: flex; min-height: 100vh; }
+
+/* ---------- 左侧侧边栏 ---------- */
+.sidebar {
+    width: 230px;
+    background: #001529;
+    color: #fff;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    z-index: 100;
+}
+.sidebar-logo {
+    height: 60px;
+    line-height: 60px;
+    text-align: center;
+    font-size: 17px;
+    font-weight: bold;
+    color: #fff;
+    background: #002140;
+    letter-spacing: 1px;
+}
+.menu { list-style: none; padding: 8px 0; }
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 13px 24px;
+    color: #b7c0cd;
+    font-size: 14px;
+    transition: all 0.18s;
+    cursor: pointer;
+}
+.menu-item:hover { background: #003a70; color: #fff; }
+.menu-item.active { background: #1890ff; color: #fff; }
+.menu-item.disabled { color: #5a6a7d; cursor: not-allowed; }
+.menu-item.disabled:hover { background: transparent; color: #5a6a7d; }
+.menu-item .mi { width: 20px; display: inline-block; margin-right: 8px; text-align: center; }
+.menu-section {
+    padding: 14px 24px 6px;
+    font-size: 12px;
+    color: #5a6a7d;
+    letter-spacing: 1px;
+}
+
+/* ---------- 主区域 ---------- */
+.main {
+    margin-left: 230px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* ---------- 顶部栏 ---------- */
+.header {
+    height: 60px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 99;
+}
+.breadcrumb { font-size: 15px; color: #333; font-weight: 500; }
+.user-area { display: flex; align-items: center; gap: 16px; color: #666; }
+.user-area .who { font-size: 14px; }
+.logout-form { display: inline; }
+.logout-btn {
+    background: #fff;
+    border: 1px solid #ffccc7;
+    padding: 6px 16px;
+    border-radius: 4px;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.18s;
+}
+.logout-btn:hover { background: #fff1f0; border-color: #e74c3c; }
+
+/* ---------- 内容区 ---------- */
+.content { padding: 24px; }
+
+/* ---------- 卡片 ---------- */
+.card {
+    background: #fff;
+    border-radius: 6px;
+    padding: 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* ---------- 统计卡片 ---------- */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.stat-card {
+    background: #fff;
+    border-radius: 6px;
+    padding: 20px 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.stat-card .stat-num { font-size: 28px; font-weight: bold; color: #1890ff; }
+.stat-card .stat-label { color: #8c8c8c; font-size: 13px; margin-top: 4px; }
+.stat-card.green .stat-num { color: #52c41a; }
+.stat-card.orange .stat-num { color: #fa8c16; }
+.stat-card.purple .stat-num { color: #722ed1; }
+
+/* ---------- 快捷入口 ---------- */
+.quick-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+.quick-card {
+    background: #fff;
+    border-radius: 6px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.18s;
+    color: #333;
+}
+.quick-card:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); transform: translateY(-2px); }
+.quick-card.disabled { color: #bbb; cursor: not-allowed; }
+.quick-card .qi { font-size: 32px; margin-bottom: 8px; }
+.quick-card .qt { font-size: 14px; }
+
+/* ---------- 工具栏 ---------- */
+.toolbar { margin-bottom: 16px; }
+
+/* ---------- 按钮 ---------- */
+.btn {
+    display: inline-block;
+    padding: 8px 20px;
+    background: #1890ff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.18s;
+}
+.btn:hover { background: #40a9ff; }
+.btn-back { background: #fff; color: #666; border: 1px solid #ddd; }
+.btn-back:hover { background: #fafafa; color: #333; border-color: #ccc; }
+
+/* ---------- 表格 ---------- */
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+}
+.table th { background: #fafafa; color: #555; font-weight: 600; }
+.table tr:hover td { background: #fafafa; }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+.tag-admin { background: #fff1f0; color: #e74c3c; }
+.tag-user { background: #f6ffed; color: #52c41a; }
+
+/* ---------- 表单 ---------- */
+.form-group { margin-bottom: 18px; max-width: 420px; }
+.form-group label { display: block; margin-bottom: 6px; color: #333; font-size: 14px; }
+.form-group input[type=text],
+.form-group input[type=password],
+.form-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.18s;
+}
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+.form-tip { margin-top: 12px; color: #999; font-size: 12px; }
+.back-link { margin-left: 12px; color: #888; font-size: 14px; }
+.back-link:hover { color: #1890ff; }

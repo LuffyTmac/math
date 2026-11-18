@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Hello</title>
+    <style>
+        body { font-family: "Microsoft YaHei", sans-serif; background: #f0f4f8; margin: 0; }
+        .hello-box {
+            width: 420px; margin: 120px auto; padding: 30px;
+            background: #fff; border-radius: 8px; text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        h1 { color: #27ae60; margin-top: 0; }
+        p { color: #555; line-height: 1.7; }
+        .time { color: #888; font-size: 14px; margin-top: 18px; }
+        .tag { display: inline-block; padding: 2px 8px; background: #eafaf1; color: #27ae60; border-radius: 4px; font-size: 12px; }
+    </style>
+</head>
+<body>
+<div class="hello-box">
+    <h1>Hello!</h1>
+    <p>这是一个 <span class="tag">无需登录</span> 即可访问的测试页面。</p>
+    <p>说明 Spring Security 放行规则与 Thymeleaf 渲染链路已正常工作。</p>
+    <div class="time">当前服务器时间：<span th:text="${now}">--</span></div>
+</div>
+</body>
+</html>

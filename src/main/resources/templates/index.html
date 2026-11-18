@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>首页 - 数学教学后台</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="layout">
+    <!-- 侧边栏 -->
+    <nav th:replace="layout/common :: sidebar('index')"></nav>
+
+    <!-- 主区域 -->
+    <div class="main">
+        <header th:replace="layout/common :: header('首页')"></header>
+
+        <div class="content">
+            <!-- 欢迎卡片 -->
+            <div class="card">
+                <div class="card-title">欢迎回来</div>
+                <p>你好，<strong th:text="${username}">用户</strong>！欢迎使用数学教学后台管理系统。
+                   当前为基础版本，后续将逐步完善各功能模块。</p>
+            </div>
+
+            <!-- 统计占位（数据后续接入） -->
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-num">-</div>
+                    <div class="stat-label">用户总数</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-num">-</div>
+                    <div class="stat-label">题目总数</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-num">-</div>
+                    <div class="stat-label">课程总数</div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-num">-</div>
+                    <div class="stat-label">今日访问</div>
+                </div>
+            </div>
+
+            <!-- 快捷入口 -->
+            <div class="card">
+                <div class="card-title">快捷入口</div>
+                <div class="quick-grid">
+                    <a th:href="@{/user/list}" class="quick-card">
+                        <div class="qi">👥</div>
+                        <div class="qt">用户管理</div>
+                    </a>
+                    <span class="quick-card disabled">
+                        <div class="qi">📚</div>
+                        <div class="qt">题目管理（建设中）</div>
+                    </span>
+                    <span class="quick-card disabled">
+                        <div class="qi">📖</div>
+                        <div class="qt">课程管理（建设中）</div>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

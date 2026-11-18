@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>用户列表 - 数学教学后台</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="layout">
+    <!-- 侧边栏 -->
+    <nav th:replace="layout/common :: sidebar('user')"></nav>
+
+    <!-- 主区域 -->
+    <div class="main">
+        <header th:replace="layout/common :: header('用户管理 / 用户列表')"></header>
+
+        <div class="content">
+            <div class="card">
+                <div class="card-title">用户列表</div>
+                <div class="toolbar">
+                    <a th:href="@{/user/add}" class="btn">+ 添加用户</a>
+                </div>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>用户名</th>
+                        <th>昵称</th>
+                        <th>角色</th>
+                        <th>创建时间</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="u : ${users}">
+                        <td th:text="${u.id}">1</td>
+                        <td th:text="${u.username}">用户名</td>
+                        <td th:text="${u.nickname != null ? u.nickname : '-'}">昵称</td>
+                        <td>
+                            <span th:if="${u.role == 'ADMIN'}" class="tag tag-admin" th:text="${u.role}">ADMIN</span>
+                            <span th:unless="${u.role == 'ADMIN'}" class="tag tag-user" th:text="${u.role}">USER</span>
+                        </td>
+                        <td th:text="${u.createTime != null ? #temporals.format(u.createTime, 'yyyy-MM-dd HH:mm') : '-'}">时间</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

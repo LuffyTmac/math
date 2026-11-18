@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>添加用户 - 数学教学后台</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="layout">
+    <!-- 侧边栏 -->
+    <nav th:replace="layout/common :: sidebar('user')"></nav>
+
+    <!-- 主区域 -->
+    <div class="main">
+        <header th:replace="layout/common :: header('用户管理 / 添加用户')"></header>
+
+        <div class="content">
+            <div class="card">
+                <div class="card-title">添加用户</div>
+                <form th:action="@{/user/add}" th:object="${user}" method="post">
+                    <div class="form-group">
+                        <label>用户名</label>
+                        <input type="text" th:field="*{username}" required="required" placeholder="登录用户名"/>
+                    </div>
+                    <div class="form-group">
+                        <label>密码</label>
+                        <input type="password" th:field="*{password}" required="required" placeholder="初始密码（将加密存储）"/>
+                    </div>
+                    <div class="form-group">
+                        <label>昵称</label>
+                        <input type="text" th:field="*{nickname}" placeholder="选填"/>
+                    </div>
+                    <div class="form-group">
+                        <label>角色</label>
+                        <select th:field="*{role}">
+                            <option value="USER">USER（普通用户）</option>
+                            <option value="ADMIN">ADMIN（管理员）</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">保 存</button>
+                    <a th:href="@{/user/list}" class="back-link">返回列表</a>
+                    <div class="form-tip">密码会使用 BCrypt 加密后存入数据库，无法逆向还原。</div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

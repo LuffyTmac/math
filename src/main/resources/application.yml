@@ -1,0 +1,66 @@
+# ============================================================
+# 数学教学网站 - Spring Boot 配置
+# 本地开发配置，后续可在本文件中修改数据库等连接信息
+# ============================================================
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  # ---------- MySQL 数据源 ----------
+  # 本地默认连接，请根据本地实际情况修改 url / username / password
+  datasource:
+    url: jdbc:mysql://tramway.proxy.rlwy.net:44207/math?useUnicode=true&characterEncoding=utf8&useSSL=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: ODYkMmgQTiSgNPsQAIkbqqRcIGiBInKH
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 连接池（HikariCP，Spring Boot 默认）
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 15
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+
+  # ---------- Thymeleaf 模板 ----------
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    encoding: UTF-8
+    mode: HTML
+    cache: false   # 开发期关闭缓存，改完模板刷新即可见
+
+  # ---------- 应用信息 ----------
+  application:
+    name: math-website
+
+# ---------- MyBatis-Plus ----------
+mybatis-plus:
+  # Mapper XML 文件位置（无 XML 也可，纯注解/BaseMapper 即可用）
+  mapper-locations: classpath*:/mapper/**/*.xml
+  # 实体类别名包
+  type-aliases-package: com.math.entity
+  configuration:
+    # 数据库下划线字段 -> Java 驼峰属性 自动映射
+    map-underscore-to-camel-case: true
+    # 开发期在控制台打印 SQL
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    cache-enabled: false
+  global-config:
+    banner: false
+    db-config:
+      # 主键策略：数据库自增
+      id-type: auto
+      # 逻辑删除字段与取值（实体中含 deleted 字段时自动生效）
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# ---------- 日志 ----------
+logging:
+  level:
+    com.math: debug
+    com.baomidou: debug
+    org.springframework.security: info
