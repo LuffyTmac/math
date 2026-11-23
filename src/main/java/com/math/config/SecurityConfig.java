@@ -55,10 +55,14 @@ public class SecurityConfig {
             .authorizeRequests()
                 // 公开访问
                 .antMatchers("/hello", "/login", "/error", "/bounty/hall", "/css/**", "/js/**", "/images/**", "/uploads/**", "/webjars/**").permitAll()
+                // 乘法分配律学习页与算式提交：学生/游客均可访问
+                .antMatchers("/distributive/learn", "/distributive/submit").permitAll()
                 // 后台首页与用户管理：仅 ADMIN 角色（管理员唯一，默认只有一个）
                 .antMatchers("/index", "/user/**").hasRole("ADMIN")
                 // 悬赏管理（出题/评分/题目管理）：ADMIN + TEACHER
                 .antMatchers("/bounty/admin/**").hasAnyRole("ADMIN", "TEACHER")
+                // 乘法分配律管理（出题/编辑/删除）：ADMIN + TEACHER
+                .antMatchers("/distributive/admin/**").hasAnyRole("ADMIN", "TEACHER")
                 // 图片上传接口：任何已登录用户（admin/teacher/student）都可使用
                 .antMatchers("/upload/**").authenticated()
                 // 其它请求（如 /bounty/hall /bounty/answer /bounty/my-answers 等）均需登录

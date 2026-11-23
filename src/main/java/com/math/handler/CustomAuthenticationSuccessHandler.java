@@ -12,12 +12,18 @@ import java.util.Collection;
 
 /**
  * 登录成功跳转处理器（三种角色）
- * - ADMIN（管理员）   → /index（后台首页，全部功能）
- * - TEACHER（教师）   → /bounty/admin/list（悬赏管理，可出题/评分，无用户管理权限）
- * - STUDENT（学生）   → /bounty/hall（悬赏大厅，仅学习天地功能）
+ * - ADMIN（管理员）   → /distributive/admin/list（分配律管理看板）
+ * - TEACHER（教师）   → /distributive/admin/list（分配律管理看板）
+ * - STUDENT（学生）   → /distributive/learn（分配律答题页）
  */
 @Component
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+
+    /** 管理员 / 教师登录后进入分配律管理看板 */
+    private static final String ADMIN_HOME = "/distributive/admin/list";
+
+    /** 学生登录后进入分配律答题页 */
+    private static final String STUDENT_HOME = "/distributive/learn";
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -29,21 +35,13 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     private String determineTargetUrl(Authentication authentication) {
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         // roles() 会自动加 ROLE_ 前缀 → ROLE_ADMIN / ROLE_TEACHER / ROLE_STUDENT
-        boolean isTeacher = false;
         for (GrantedAuthority auth : authorities) {
             String role = auth.getAuthority();
-            if ("ROLE_ADMIN".equals(role)) {
-                return "/index";
-            }
-            if ("ROLE_TEACHER".equals(role)) {
-                isTeacher = true;
+            if ("ROLE_ADMIN".equals(role) || "ROLE_TEACHER".equals(role)) {
+                return ADMIN_HOME;
             }
         }
-        // 教师登录 → 悬赏管理列表（可出题/评分/管理题目）
-        if (isTeacher) {
-            return "/bounty/admin/list";
-        }
-        // 学生登录 → 悬赏大厅
-        return "/bounty/hall";
+        // 学生（以及其它未匹配角色）→ 分配律答题页
+        return STUDENT_HOME;
     }
 }

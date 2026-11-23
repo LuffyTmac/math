@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title>分配律题目管理 - 数学小乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <style>
+        .thumb {
+            width: 104px;
+            height: 68px;
+            border: 1px solid #eef2f7;
+            border-radius: 6px;
+            background: #f7fbff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .thumb img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+        .thumb .none { font-size: 18px; color: #c2cdd8; }
+        .manage-title { font-weight: 600; color: #1f2d3d; }
+        .manage-sub { font-size: 12px; color: #9aa7b8; margin-top: 3px; }
+        .draft-note { font-size: 12px; color: #b8860b; }
+        .table .tag { white-space: nowrap; }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('distributive-admin')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('分配律管理 / 题目管理')"></header>
+
+        <div class="content">
+            <div th:if="${msg != null}" class="msg"
+                 th:classappend="${msgType == 'success' ? 'msg-success' : 'msg-error'}"
+                 th:text="${msg}">提示</div>
+
+            <div class="card">
+                <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+                    <span>⚙️ 分配律题目管理</span>
+                    <span>
+                        <a th:href="@{/distributive/admin/list}" class="btn btn-back">← 返回看板</a>
+                        <a th:href="@{/distributive/admin/add}" class="btn btn-add" style="margin-left:8px;">+ 新增题目</a>
+                    </span>
+                </div>
+
+                <table class="table" th:if="${questions != null and !questions.isEmpty()}">
+                    <thead>
+                    <tr>
+                        <th width="130">图片</th>
+                        <th>题目名称</th>
+                        <th width="100">状态</th>
+                        <th width="80">排序</th>
+                        <th width="90">算式数</th>
+                        <th width="120">创建时间</th>
+                        <th width="300">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="q : ${questions}">
+                        <td>
+                            <div class="thumb">
+                                <img th:if="${q.imageUrl != null and !q.imageUrl.isEmpty()}"
+                                     th:src="${q.imageUrl}" th:alt="${q.title}"/>
+                                <span class="none" th:if="${q.imageUrl == null or q.imageUrl.isEmpty()}">🖼</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="manage-title" th:text="${q.title}">题目名称</div>
+                            <div class="manage-sub">
+                                <span th:if="${q.description != null and !q.description.isEmpty()}">含详细说明</span>
+                                <span th:if="${q.description == null or q.description.isEmpty()}">无详细说明</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span th:if="${q.status == 'DRAFT'}" class="tag tag-draft">📝 草稿</span>
+                            <span th:if="${q.status == 'PUBLISHED'}" class="tag tag-published">🌟 已发布</span>
+                            <div class="draft-note" th:if="${q.status == 'DRAFT'}">学生端不可见</div>
+                        </td>
+                        <td th:text="${q.sortOrder}">1</td>
+                        <td>
+                            <b style="color:#1890ff;" th:text="${q.answerCount != null ? q.answerCount : 0}">0</b> 条
+                        </td>
+                        <td th:text="${q.createTime != null ? #temporals.format(q.createTime, 'MM-dd HH:mm') : '-'}">时间</td>
+                        <td class="actions">
+                            <a th:href="@{/distributive/admin/edit(id=${q.id})}" class="btn-sm btn-edit">✏️ 编辑</a>
+                            <form th:if="${q.status == 'DRAFT'}"
+                                  th:action="@{/distributive/admin/publish}" method="post" class="inline-form">
+                                <input type="hidden" name="id" th:value="${q.id}"/>
+                                <button type="submit" class="btn-sm btn-reset">📢 发布</button>
+                            </form>
+                            <form th:if="${q.status == 'PUBLISHED'}"
+                                  th:action="@{/distributive/admin/unpublish}" method="post" class="inline-form">
+                                <input type="hidden" name="id" th:value="${q.id}"/>
+                                <button type="submit" class="btn-sm btn-hint-hide">🙈 下架</button>
+                            </form>
+                            <form th:action="@{/distributive/admin/delete}" method="post" class="inline-form"
+                                  th:data-title="${q.title}">
+                                <input type="hidden" name="id" th:value="${q.id}"/>
+                                <button type="submit" class="btn-sm btn-del"
+                                        onclick="return confirm('确定删除题目「' + this.form.getAttribute('data-title') + '」吗？该题下的学生算式也会一并删除。');">🗑 删除</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div th:if="${questions == null or questions.isEmpty()}"
+                     style="text-align:center;color:#999;padding:40px;">
+                    😶 还没有题目，点击右上角「新增题目」创建第一道吧！
+                </div>
+
+                <div style="margin-top:14px;color:#9aa7b8;font-size:12px;">
+                    共 <b th:text="${totalAnswers}">0</b> 条学生算式。列表看板只展示图片，题目的增删改都在这里操作。
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

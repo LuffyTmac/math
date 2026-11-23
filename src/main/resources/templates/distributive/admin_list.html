@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>分配律管理 - 数学小乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="stylesheet" th:href="@{/css/distributive-admin.css}"/>
+</head>
+<body class="sidebar-collapsed" th:attr="data-ctx=@{/}">
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('distributive-admin')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('分配律管理 / 题目列表')"></header>
+
+        <div class="content dist-content"
+             th:attr="data-total=${totalAnswers},data-max-id=${maxAnswerId}">
+            <div th:if="${msg != null}" class="msg"
+                 th:classappend="${msgType == 'success' ? 'msg-success' : 'msg-error'}"
+                 th:text="${msg}">提示</div>
+
+            <!-- ===== 没有题目时的空状态 ===== -->
+            <div class="card dist-empty" th:if="${questions == null or questions.isEmpty()}">
+                <div class="dist-empty-emoji">✖️</div>
+                <p>还没有分配律题目，先创建第一道吧～</p>
+                <a th:href="@{/distributive/admin/add}" class="btn btn-add">+ 新增题目</a>
+            </div>
+
+            <!-- ===== 科幻舞台 ===== -->
+            <div class="stage" id="stage" th:if="${questions != null and !questions.isEmpty()}">
+                <div class="stage-toolbar">
+                    <button type="button" class="btn-magic" id="btnMagic"
+                            th:disabled="${totalAnswers == null or totalAnswers == 0}">🧩 开始归类</button>
+                    <span class="stage-meta">
+                        <b id="cntTotal" th:text="${totalAnswers}">0</b> 条学生算式
+                        <span class="dot"></span>
+                        <span id="pollState">自动刷新 15s</span>
+                        <span class="done-flag" id="doneFlag" hidden>✨ 已归类</span>
+                    </span>
+                    <button type="button" class="tool-btn" id="btnRefresh" title="立即拉取新提交的算式">🔄 刷新</button>
+                    <a th:href="@{/distributive/admin/manage}" class="tool-btn" title="管理题目">⚙️ 题目管理</a>
+                </div>
+
+                <div class="field" id="field">
+                    <div class="field-empty" id="fieldEmpty"
+                         th:if="${totalAnswers == null or totalAnswers == 0}">
+                        😶 还没有学生提交算式，孩子们提交后会飘到这里～
+                    </div>
+                </div>
+
+                <!-- 一行四卡 + 四条甬道 -->
+                <div class="row" id="row">
+                    <div class="col" th:each="q : ${questions}" th:attr="data-qid=${q.id}">
+                        <div class="qcard" th:classappend="${q.status == 'DRAFT'} ? 'is-draft' : ''">
+                            <img th:if="${q.imageUrl != null and !q.imageUrl.isEmpty()}"
+                                 th:src="${q.imageUrl}" th:alt="${q.title}"/>
+                            <span class="no-img" th:if="${q.imageUrl == null or q.imageUrl.isEmpty()}">🖼</span>
+                        </div>
+                        <div class="tunnel">
+                            <div class="tunnel-head">
+                                <span class="num" th:text="${q.answerCount != null ? q.answerCount : 0}">0</span>
+                                <span class="unit">条</span>
+                            </div>
+                            <div class="lane-wrap">
+                                <div class="lane-box">
+                                    <div class="lane-cap">A×(B+C)</div>
+                                    <div class="lane" th:attr="data-lane=${q.id},data-kind=paren"><div class="lane-col"></div><div class="lane-col"></div></div>
+                                </div>
+                                <div class="lane-box">
+                                    <div class="lane-cap">A×B＋A×C</div>
+                                    <div class="lane" th:attr="data-lane=${q.id},data-kind=expand"><div class="lane-col"></div><div class="lane-col"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 初始算式数据（隐藏节点，供 JS 生成气泡） ===== -->
+            <div id="exprData" hidden>
+                <span class="expr-item" th:each="a : ${answers}"
+                      th:attr="data-id=${a.id},data-qid=${a.questionId},data-time=${a.createTime != null ? #temporals.format(a.createTime, 'HH:mm') : ''}"
+                      th:text="${a.expression}">3*(4+5)</span>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 删除算式等操作的居中提示框（自动消失，不在顶部留痕） -->
+<div class="flash-toast" id="flashToast" th:if="${toastMsg != null}"
+     th:attr="data-type=${toastType != null ? toastType : 'success'}">
+    <div class="flash-toast-card">
+        <div class="ft-emoji" th:text="${toastType == 'error' ? '⚠️' : '✅'}">✅</div>
+        <div class="ft-text" th:text="${toastMsg}">已删除</div>
+    </div>
+</div>
+<!-- AJAX 操作的轻提示（不遮挡页面、不刷新） -->
+<div class="ajax-toast" id="ajaxToast" role="status" aria-live="polite"></div>
+
+<script>
+    (function () {
+        var toast = document.getElementById('flashToast');
+        if (!toast) return;
+        function close() {
+            toast.classList.add('hide');
+            setTimeout(function () { toast.remove(); }, 360);
+        }
+        setTimeout(close, 1500);
+        toast.addEventListener('click', close);
+    })();
+</script>
+<script th:src="@{/js/distributive-admin.js}"></script>
+</body>
+</html>
+

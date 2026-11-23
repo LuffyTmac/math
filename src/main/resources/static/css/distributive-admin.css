@@ -1,0 +1,594 @@
+/* ============================================================
+   乘法分配律 · 教师端「科幻甬道」列表页
+   只被 distributive/admin_list.html 引用
+   ============================================================ */
+
+.dist-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: calc(100vh - 60px);
+    padding: 18px 20px 20px;
+    overflow: hidden;
+}
+.dist-content .msg { flex: 0 0 auto; margin-bottom: 0; }
+
+/* ---------- 空状态 ---------- */
+.dist-empty { text-align: center; padding: 64px 20px; }
+.dist-empty-emoji { font-size: 46px; margin-bottom: 12px; }
+.dist-empty p { color: #8a94a6; margin-bottom: 18px; }
+
+/* ============================================================
+   舞台
+   ============================================================ */
+.stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    border-radius: 18px;
+    overflow: hidden;
+    background:
+        radial-gradient(1100px 520px at 50% -12%, #18264f 0%, transparent 62%),
+        radial-gradient(760px 420px at 8% 112%, #1d1338 0%, transparent 60%),
+        linear-gradient(180deg, #080d1c 0%, #04070f 100%);
+    box-shadow: 0 18px 42px rgba(8, 18, 38, .35);
+}
+.stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(62, 230, 255, .055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(62, 230, 255, .055) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 26%, #000 84%, transparent 100%);
+            mask-image: linear-gradient(180deg, transparent 0%, #000 26%, #000 84%, transparent 100%);
+}
+.stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(120% 80% at 50% 118%, rgba(62, 230, 255, .16) 0%, transparent 58%);
+}
+
+/* ---------- 顶部工具条 ---------- */
+.stage-toolbar {
+    position: absolute;
+    z-index: 30;
+    left: 18px;
+    right: 18px;
+    top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: nowrap;
+}
+.btn-magic {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    border: 1px solid rgba(62, 230, 255, .55);
+    color: #d8f7ff;
+    cursor: pointer;
+    background: linear-gradient(135deg, rgba(62, 230, 255, .20), rgba(176, 124, 255, .20));
+    border-radius: 999px;
+    padding: 9px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    box-shadow: 0 0 18px rgba(62, 230, 255, .28), inset 0 0 14px rgba(62, 230, 255, .12);
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.btn-magic:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 26px rgba(62, 230, 255, .45), inset 0 0 18px rgba(62, 230, 255, .2);
+}
+.btn-magic:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+.btn-magic.is-reset {
+    border-color: rgba(176, 124, 255, .55);
+    color: #efe6ff;
+    background: linear-gradient(135deg, rgba(176, 124, 255, .22), rgba(62, 230, 255, .14));
+}
+.stage-meta {
+    color: #7f95b8;
+    font-size: 12.5px;
+    letter-spacing: .3px;
+    margin-right: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    min-width: 0;
+    overflow: hidden;
+}
+.stage-meta b {
+    color: #6ff0ff;
+    font-family: Consolas, monospace;
+    font-size: 14px;
+}
+.stage-meta .dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #6bffb8;
+    box-shadow: 0 0 8px #6bffb8;
+    margin: 0 4px;
+    flex: 0 0 auto;
+}
+.stage-meta #pollState.paused { color: #7f95b8; opacity: .6; }
+.done-flag {
+    color: #6bffb8;
+    text-shadow: 0 0 10px rgba(107, 255, 184, .6);
+    white-space: nowrap;
+    margin-left: 4px;
+}
+
+.tool-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    border: 1px solid rgba(255, 255, 255, .14);
+    color: #9fd9ff;
+    border-radius: 999px;
+    padding: 8px 15px;
+    font-size: 13px;
+    font-family: inherit;
+    background: rgba(255, 255, 255, .05);
+    cursor: pointer;
+    transition: background .18s ease, border-color .18s ease;
+}
+.tool-btn:hover { background: rgba(62, 230, 255, .14); border-color: rgba(62, 230, 255, .38); color: #d8f7ff; }
+.tool-btn:active { transform: scale(.97); }
+
+/* ---------- 云海（气泡活动区） ---------- */
+.field {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 56px;
+    bottom: 200px;
+    z-index: 10;
+}
+.field-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5b7093;
+    font-size: 13.5px;
+    letter-spacing: .04em;
+}
+
+.bubble {
+    position: absolute;
+    left: 0;
+    top: 0;
+    will-change: transform;
+    padding: 6px 13px;
+    border-radius: 999px;
+    white-space: nowrap;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: #d8f7ff;
+    background: rgba(9, 26, 46, .62);
+    border: 1px solid rgba(62, 230, 255, .38);
+    box-shadow: 0 0 14px rgba(62, 230, 255, .18), inset 0 0 10px rgba(62, 230, 255, .07);
+    -webkit-backdrop-filter: blur(3px);
+            backdrop-filter: blur(3px);
+    user-select: none;
+    cursor: default;
+}
+.bubble.c2 { color: #f0e3ff; border-color: rgba(176, 124, 255, .42); box-shadow: 0 0 14px rgba(176, 124, 255, .2), inset 0 0 10px rgba(176, 124, 255, .08); }
+.bubble.c3 { color: #fff0cf; border-color: rgba(255, 196, 107, .42); box-shadow: 0 0 14px rgba(255, 196, 107, .18), inset 0 0 10px rgba(255, 196, 107, .08); }
+.bubble.c4 { color: #d6ffe9; border-color: rgba(107, 255, 184, .38); box-shadow: 0 0 14px rgba(107, 255, 184, .16), inset 0 0 10px rgba(107, 255, 184, .07); }
+.bubble.fresh { animation: bubbleIn .45s cubic-bezier(.34, 1.4, .64, 1); }
+@keyframes bubbleIn {
+    from { opacity: 0; transform: translate3d(var(--x, 0), calc(var(--y, 0px) + 24px), 0) scale(.7); }
+    to   { opacity: 1; }
+}
+
+/* 数量多时自动紧凑 */
+.field.density-compact .bubble { font-size: 13.5px; padding: 4px 9px; }
+.field.density-dense .bubble { font-size: 12px; padding: 3px 7px; }
+
+/* ---------- 一行四卡 + 甬道 ----------
+   未归类：甬道高度 0，卡片贴在舞台底部，整块上方都留给算式飘动
+   归类后：甬道展开，卡片被顶到顶部，卡片下方全部是甬道
+*/
+.row {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    top: 62px;
+    bottom: 16px;
+    z-index: 20;
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 2px;
+    scrollbar-width: thin;
+}
+.row::-webkit-scrollbar { height: 6px; }
+.row::-webkit-scrollbar-thumb { background: rgba(62, 230, 255, .25); border-radius: 3px; }
+
+.col {
+    flex: 1 1 0;
+    min-width: 232px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 0;
+}
+
+.qcard {
+    position: relative;
+    flex: 0 0 auto;
+    height: clamp(150px, 22vh, 220px);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #eef2f7;
+    border: 1px solid rgba(255, 255, 255, .10);
+}
+.qcard img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    transition: transform .4s cubic-bezier(.34, 1.2, .64, 1);
+}
+.qcard:hover img { transform: scale(1.06); }
+.qcard.is-draft { opacity: .55; filter: grayscale(.5); }
+.no-img {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    color: #c2cdd8;
+}
+
+/* 甬道：默认高度 0 不占位，归类后由 JS 撑开 */
+.tunnel {
+    position: relative;
+    flex: 0 0 auto;
+    margin-top: 0;
+    height: 0;
+    opacity: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(62, 230, 255, .30);
+    background: linear-gradient(180deg, rgba(62, 230, 255, .10) 0%, rgba(62, 230, 255, .02) 24%, rgba(4, 10, 22, .70) 100%);
+    box-shadow: inset 0 0 34px rgba(62, 230, 255, .10), 0 0 18px rgba(62, 230, 255, .08);
+    transition: height .46s cubic-bezier(.3, .85, .35, 1),
+                margin-top .46s ease,
+                opacity .3s ease,
+                border-color .25s ease,
+                box-shadow .25s ease;
+}
+.tunnel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(180deg, rgba(62, 230, 255, .10) 0 1px, transparent 1px 16px);
+    -webkit-mask-image: linear-gradient(180deg, #000, transparent 78%);
+            mask-image: linear-gradient(180deg, #000, transparent 78%);
+}
+.tunnel::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 70%;
+    height: 46px;
+    transform: translateX(-50%);
+    background: radial-gradient(60% 100% at 50% 0%, rgba(62, 230, 255, .45), transparent 72%);
+    pointer-events: none;
+}
+.row.organized .tunnel {
+    margin-top: 9px;
+    opacity: 1;
+    border-color: rgba(62, 230, 255, .62);
+    box-shadow: inset 0 0 40px rgba(62, 230, 255, .20), 0 0 26px rgba(62, 230, 255, .22);
+}
+/* 飞行阶段把云海抬到卡片/甬道之上，气泡永远在最上层 */
+.stage.is-flying .field { z-index: 60; }
+.stage.is-flying .bubble { z-index: 999; }
+
+.tunnel-head {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: 3px;
+    padding: 7px 12px 0;
+    font-family: Consolas, monospace;
+    color: #6ff0ff;
+    opacity: .75;
+}
+.tunnel-head .num { font-size: 12px; }
+.tunnel-head .unit { font-size: 10px; opacity: .7; }
+/* 每个格式栏内部再分左右两列，能放下更多算式 */
+.lane {
+    position: relative;
+    z-index: 2;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    gap: 6px;
+    padding: 4px 8px 8px;
+}
+.lane-col {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 5px;
+    overflow-y: auto;
+    padding: 2px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(62, 230, 255, .28) transparent;
+}
+.lane-col::-webkit-scrollbar { width: 4px; }
+.lane-col::-webkit-scrollbar-thumb { background: rgba(62, 230, 255, .28); border-radius: 2px; }
+
+/* 每条甬道一套主题色：上栏（分配式）用 --chip-a-*，下栏（展开式）用 --chip-b-* */
+.col:nth-child(4n+1) {
+    --chip-a-c: #d8f7ff; --chip-a-b: rgba(62, 230, 255, .55); --chip-a-bg: rgba(62, 230, 255, .16);
+    --chip-b-c: #d6ffe9; --chip-b-b: rgba(107, 255, 184, .52); --chip-b-bg: rgba(107, 255, 184, .14);
+}
+.col:nth-child(4n+2) {
+    --chip-a-c: #f0e3ff; --chip-a-b: rgba(176, 124, 255, .58); --chip-a-bg: rgba(176, 124, 255, .18);
+    --chip-b-c: #ffe0f0; --chip-b-b: rgba(255, 143, 208, .52); --chip-b-bg: rgba(255, 143, 208, .14);
+}
+.col:nth-child(4n+3) {
+    --chip-a-c: #fff0cf; --chip-a-b: rgba(255, 196, 107, .58); --chip-a-bg: rgba(255, 196, 107, .16);
+    --chip-b-c: #ffe2d1; --chip-b-b: rgba(255, 143, 90, .55); --chip-b-bg: rgba(255, 143, 90, .15);
+}
+.col:nth-child(4n+4) {
+    --chip-a-c: #dcebff; --chip-a-b: rgba(111, 177, 255, .58); --chip-a-bg: rgba(111, 177, 255, .16);
+    --chip-b-c: #e6e0ff; --chip-b-b: rgba(157, 140, 255, .55); --chip-b-bg: rgba(157, 140, 255, .15);
+}
+
+.chip {
+    position: relative;
+    flex: 0 0 auto;
+    align-self: stretch;
+    width: 100%;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 8px;
+    font-family: Consolas, monospace;
+    font-weight: 600;
+    color: var(--chip-a-c, #d8f7ff);
+    background: var(--chip-a-bg, rgba(62, 230, 255, .12));
+    border: 1px solid var(--chip-a-b, rgba(62, 230, 255, .45));
+    box-shadow: 0 0 12px var(--chip-a-bg, rgba(62, 230, 255, .16));
+    animation: chipIn .32s cubic-bezier(.34, 1.4, .64, 1);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+/* 下栏（展开式）统一用该甬道的第二主题色 */
+.lane[data-kind="expand"] .chip {
+    color: var(--chip-b-c, #f0e3ff);
+    background: var(--chip-b-bg, rgba(176, 124, 255, .12));
+    border-color: var(--chip-b-b, rgba(176, 124, 255, .48));
+    box-shadow: 0 0 12px var(--chip-b-bg, rgba(176, 124, 255, .16));
+}
+@keyframes chipIn {
+    from { opacity: 0; transform: translateY(8px) scale(.9); }
+    to   { opacity: 1; transform: none; }
+}
+.chip .chip-del {
+    display: none;
+    margin-left: 6px;
+    border: none;
+    background: transparent;
+    color: #ffb4b4;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 0 2px;
+    vertical-align: middle;
+}
+.chip:hover .chip-del { display: inline; }
+
+/* ---------- 窄屏：整行横向滚动 ---------- */
+@media (max-width: 1200px) {
+    .col { min-width: 250px; }
+}
+@media (max-width: 900px) {
+    .dist-content { padding: 12px; }
+    .stage-toolbar { gap: 10px; }
+    .switch span { display: none; }
+    .stage-meta #pollState { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bubble,
+    .chip,
+    .btn-magic { transition: none !important; animation: none !important; }
+}
+
+
+/* ============================================================
+   居中操作提示框（删除算式等，自动消失）
+   ============================================================ */
+.flash-toast {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(4, 10, 20, .38);
+    -webkit-backdrop-filter: blur(2px);
+            backdrop-filter: blur(2px);
+    transition: opacity .35s ease;
+}
+.flash-toast.hide { opacity: 0; }
+.flash-toast-card {
+    min-width: 260px;
+    max-width: 82vw;
+    padding: 24px 34px 22px;
+    text-align: center;
+    border-radius: 16px;
+    background: #0f1b2d;
+    border: 1px solid rgba(62, 230, 255, .38);
+    box-shadow: 0 22px 54px rgba(0, 0, 0, .5), 0 0 26px rgba(62, 230, 255, .16);
+    animation: toastPop .26s cubic-bezier(.34, 1.4, .64, 1);
+}
+@keyframes toastPop {
+    from { opacity: 0; transform: translateY(10px) scale(.94); }
+    to   { opacity: 1; transform: none; }
+}
+.flash-toast .ft-emoji { font-size: 30px; line-height: 1; margin-bottom: 10px; }
+.flash-toast .ft-text {
+    font-size: 14.5px;
+    color: #d8f7ff;
+    line-height: 1.6;
+    word-break: break-all;
+}
+.flash-toast[data-type="error"] .flash-toast-card {
+    border-color: rgba(255, 120, 120, .5);
+    box-shadow: 0 22px 54px rgba(0, 0, 0, .5), 0 0 26px rgba(255, 120, 120, .18);
+}
+.flash-toast[data-type="error"] .ft-text { color: #ffb4b4; }
+
+@media (prefers-reduced-motion: reduce) {
+    .flash-toast, .flash-toast-card { transition: none !important; animation: none !important; }
+}
+
+/* ---------- 甬道内的两种格式分栏 ---------- */
+.lane-wrap {
+    position: relative;
+    z-index: 2;
+    height: calc(100% - 24px);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+.lane-box {
+    flex: 1 1 50%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+.lane-box + .lane-box {
+    border-top: 1px dashed rgba(62, 230, 255, .20);
+}
+.lane-cap {
+    flex: 0 0 auto;
+    padding: 4px 10px 2px;
+    font-family: Consolas, monospace;
+    font-size: 10px;
+    letter-spacing: .08em;
+    color: #6ff0ff;
+    opacity: .5;
+    user-select: none;
+}
+.lane {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 0;
+}
+
+/* ---------- 归类时卡片变淡，突出算式 ---------- */
+.qcard { transition: opacity .35s ease, filter .35s ease, border-color .25s ease, box-shadow .35s ease; }
+.row.organized .qcard {
+    opacity: 1;
+    /* 只比原图“稍微灰一点”：轻度去色 + 轻微压暗，保留图片本身的色彩 */
+    filter: grayscale(.35) brightness(.88) saturate(.92);
+    border-color: rgba(255, 255, 255, .12);
+}
+.row.organized .qcard:hover {
+    opacity: 1;
+    filter: none;
+    border-color: rgba(62, 230, 255, .55);
+    box-shadow: 0 0 24px rgba(62, 230, 255, .18);
+}
+
+/* ---------- AJAX 操作提示：屏幕正中、醒目但不遮挡操作 ---------- */
+.ajax-toast {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    z-index: 1300;
+    transform: translate(-50%, -50%) scale(.88);
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 32px;
+    border-radius: 18px;
+    max-width: 78vw;
+    background: linear-gradient(160deg, rgba(18, 36, 62, .98), rgba(8, 18, 34, .98));
+    border: 1px solid rgba(62, 230, 255, .55);
+    color: #eafcff;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    text-align: left;
+    white-space: normal;
+    box-shadow: 0 24px 56px rgba(0, 0, 0, .5),
+                0 0 32px rgba(62, 230, 255, .28),
+                inset 0 0 18px rgba(62, 230, 255, .08);
+    pointer-events: none;
+    transition: transform .3s cubic-bezier(.34, 1.4, .64, 1), opacity .3s ease;
+}
+.ajax-toast::before {
+    content: "✅";
+    font-size: 24px;
+    line-height: 1;
+    flex: 0 0 auto;
+}
+.ajax-toast.error {
+    border-color: rgba(255, 120, 120, .65);
+    color: #ffd9d9;
+    box-shadow: 0 24px 56px rgba(0, 0, 0, .5),
+                0 0 32px rgba(255, 120, 120, .3),
+                inset 0 0 18px rgba(255, 120, 120, .08);
+}
+.ajax-toast.error::before { content: "⚠️"; }
+.ajax-toast.show { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+
+/* chip 删除后的退场动画 */
+.chip-out {
+    opacity: 0 !important;
+    transform: translateX(10px) scale(.9) !important;
+    transition: opacity .22s ease, transform .22s ease;
+}
+
+/* 归类状态下新算式飞入甬道的临时元素 */
+.fly-chip {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 80;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #d8f7ff;
+    background: rgba(62, 230, 255, .16);
+    border: 1px solid rgba(62, 230, 255, .55);
+    box-shadow: 0 0 14px rgba(62, 230, 255, .35);
+    white-space: nowrap;
+    pointer-events: none;
+    will-change: transform;
+}

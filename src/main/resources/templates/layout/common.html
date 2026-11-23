@@ -6,7 +6,7 @@
   各页面通过 th:replace 引入：
     <nav th:replace="layout/common :: sidebar('hall')"></nav>
     <header th:replace="layout/common :: header('标题')"></header>
-  active 取值：hall / my-answers / index / user / bounty-admin
+  active 取值：hall / my-answers / distributive-learn / index / user / bounty-admin / distributive-admin
 -->
 <body>
 
@@ -25,6 +25,10 @@
             <a sec:authorize="isAuthenticated()" th:href="@{/bounty/my-answers}" class="menu-item" th:classappend="${active == 'my-answers'} ? 'active' : ''">
                 <span class="mi">📝</span> 我的答题
             </a>
+            <!-- 乘法分配律学习页：所有用户（含游客）可见 -->
+            <a th:href="@{/distributive/learn}" class="menu-item" th:classappend="${active == 'distributive-learn'} ? 'active' : ''">
+                <span class="mi">✖️</span> 分配律学习
+            </a>
         </li>
         <!-- 管理后台分组：ADMIN + TEACHER 可见 -->
         <li sec:authorize="hasAnyRole('ADMIN','TEACHER')" class="menu-section" onclick="toggleMenuGroup(this)">
@@ -41,6 +45,10 @@
             <!-- 悬赏管理：ADMIN + TEACHER 可见 -->
             <a th:href="@{/bounty/admin/list}" class="menu-item" th:classappend="${active == 'bounty-admin'} ? 'active' : ''">
                 <span class="mi">📚</span> 悬赏管理
+            </a>
+            <!-- 乘法分配律管理：ADMIN + TEACHER 可见 -->
+            <a th:href="@{/distributive/admin/list}" class="menu-item" th:classappend="${active == 'distributive-admin'} ? 'active' : ''">
+                <span class="mi">✖️</span> 分配律管理
             </a>
         </li>
     </ul>

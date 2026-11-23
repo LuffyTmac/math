@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title th:text="${mode == 'edit' ? '编辑分配律题目' : '新增分配律题目'} + ' - 数学小乐园'">新增分配律题目</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <style>
+        .img-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .img-row input[type=text] { flex: 1 1 320px; }
+        .btn-upload {
+            background: #722ed1; color: #fff; border: none; border-radius: 4px;
+            padding: 8px 16px; cursor: pointer; font-size: 13px; white-space: nowrap;
+        }
+        .btn-upload:hover { background: #9254de; }
+        .img-preview-box {
+            margin-top: 10px;
+            width: 260px;
+            height: 160px;
+            border: 1px dashed #cfe3f7;
+            border-radius: 8px;
+            background: #f7fbff center/contain no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .img-preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+        .img-preview-box .img-preview-tip { font-size: 12px; color: #a8b6c6; }
+    </style>
+</head>
+<body th:attr="data-ctx=@{/}">
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('distributive-admin')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header(${mode == 'edit' ? '分配律管理 / 编辑题目' : '分配律管理 / 新增题目'})"></header>
+
+        <div class="content">
+            <div th:if="${msg != null}" class="msg"
+                 th:classappend="${msgType == 'success' ? 'msg-success' : 'msg-error'}"
+                 th:text="${msg}">提示</div>
+
+            <div class="card">
+                <div class="card-title" th:text="${mode == 'edit' ? '✏️ 编辑分配律题目' : '➕ 新增分配律题目'}">新增分配律题目</div>
+
+                <form th:action="${mode == 'edit'} ? @{/distributive/admin/edit} : @{/distributive/admin/add}"
+                      method="post"
+                      onsubmit="document.getElementById('descHidden').value = document.getElementById('editor').innerHTML;">
+                    <input type="hidden" name="id" th:if="${mode == 'edit'}" th:value="${question.id}"/>
+                    <input type="hidden" name="description" id="descHidden" th:value="${question.description}"/>
+
+                    <!-- 题目名称 -->
+                    <div class="form-row">
+                        <label class="form-label"><span class="req">*</span>题目名称</label>
+                        <div class="form-control" style="max-width:680px;">
+                            <input type="text" name="title" th:value="${question.title}"
+                                   placeholder="一句话概括，如：一共有多少块巧克力？" required="required" maxlength="200"/>
+                            <div class="form-hint-inline">列表卡片只显示图片；名称用于编辑、预览和图片说明</div>
+                        </div>
+                    </div>
+
+                    <!-- 图片链接 + 上传 -->
+                    <div class="form-row">
+                        <label class="form-label">🖼 图片链接</label>
+                        <div class="form-control" style="max-width:680px;">
+                            <div class="img-row">
+                                <input type="text" name="imageUrl" id="imageUrlInput" th:value="${question.imageUrl}"
+                                       placeholder="https://… 或点右侧上传本地图片"/>
+                                <button type="button" class="btn-upload" id="btnUpload">📤 上传图片</button>
+                                <input type="file" id="fileInput" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp"
+                                       style="display:none;"/>
+                            </div>
+                            <div class="form-hint-inline">学生卡片与甬道都只展示图片，建议 4:3 或 16:9；留空会显示占位图</div>
+                            <div class="img-preview-box" id="imgPreviewBox">
+                                <img id="imgPreview" alt="图片预览" th:src="${question.imageUrl}"
+                                     th:style="${question.imageUrl != null and !question.imageUrl.isEmpty()} ? '' : 'display:none;'"/>
+                                <span class="img-preview-tip" id="imgPreviewTip"
+                                      th:style="${question.imageUrl != null and !question.imageUrl.isEmpty()} ? 'display:none;' : ''">
+                                    图片预览区
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 排序号 -->
+                    <div class="form-row">
+                        <label class="form-label">🔢 排序号</label>
+                        <div class="form-control">
+                            <input type="number" name="sortOrder" th:value="${question.sortOrder != null ? question.sortOrder : 0}"
+                                   min="0" step="1" style="width:140px;"/>
+                            <div class="form-hint-inline">数字越小越靠前；管理页与学习页都按它排序（决定第几题、第几条甬道）</div>
+                        </div>
+                    </div>
+
+                    <!-- 详细说明（富文本） -->
+                    <div class="form-row">
+                        <label class="form-label" style="vertical-align:top;">📄 详细说明</label>
+                        <div class="form-control" style="max-width:680px;">
+                            <div class="re-toolbar">
+                                <span class="re-btn" data-cmd="bold" title="加粗" style="font-weight:bold;">B</span>
+                                <span class="re-btn" data-cmd="italic" title="斜体" style="font-style:italic;">I</span>
+                                <span class="re-btn" data-cmd="underline" title="下划线" style="text-decoration:underline;">U</span>
+                                <span class="re-btn" data-cmd="insertUnorderedList" title="无序列表">• 列表</span>
+                                <span class="re-btn" data-cmd="insertOrderedList" title="有序列表">1. 列表</span>
+                                <span class="re-btn" data-cmd="removeFormat" title="清除格式">清除</span>
+                                <span class="re-btn re-btn-img" title="插入图片">🖼 图片<input type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp"/></span>
+                            </div>
+                            <div id="editor" class="rich-editor" contenteditable="true"
+                                 data-placeholder="选填：给孩子的提示，学生答题层会以「💡 小提示」折叠展示"></div>
+                            <div class="form-hint-inline">选填。学生在答题层点开「💡 小提示」才会看到</div>
+                        </div>
+                    </div>
+
+                    <!-- 当前状态 -->
+                    <div class="form-actions" style="border-top:none; margin-top:0; padding-top:0; margin-bottom:14px;"
+                         th:if="${mode == 'edit' and question != null and question.status != null}">
+                        <div class="status-tip" th:if="${question.status == 'PUBLISHED'}">
+                            📌 当前状态：<b class="st-pub">已发布</b>（学习页可见）。
+                            点「保存草稿」会<b>下架</b>转为草稿；点「发布」保持发布状态。
+                        </div>
+                        <div class="status-tip" th:if="${question.status == 'DRAFT'}">
+                            📌 当前状态：<b class="st-draft">草稿</b>（学习页不可见）。
+                            点「保存草稿」继续保存为草稿；点「发布」会出现在学习页。
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" name="saveAction" value="DRAFT" class="btn btn-default">📝 保存草稿</button>
+                        <button type="submit" name="saveAction" value="PUBLISH" class="btn btn-primary">📢 发布</button>
+                        <a th:href="@{/distributive/admin/list}" class="btn btn-back" style="margin-left:10px;">← 返回列表</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/rich-editor.js}"></script>
+<script>
+    (function () {
+        var ctx = document.body.getAttribute('data-ctx') || '/';
+        if (ctx.charAt(ctx.length - 1) !== '/') ctx += '/';
+
+        // 富文本编辑器（详细说明）
+        initRichEditor('editor', 'descHidden');
+
+        var input = document.getElementById('imageUrlInput');
+        var img = document.getElementById('imgPreview');
+        var tip = document.getElementById('imgPreviewTip');
+        var box = document.getElementById('imgPreviewBox');
+        var fileInput = document.getElementById('fileInput');
+        var btnUpload = document.getElementById('btnUpload');
+
+        function showPreview(url) {
+            if (url) {
+                img.src = url;
+                img.style.display = '';
+                tip.style.display = 'none';
+            } else {
+                img.style.display = 'none';
+                tip.style.display = '';
+                tip.textContent = '图片预览区';
+            }
+        }
+
+        input.addEventListener('input', function () { showPreview(input.value.trim()); });
+
+        img.addEventListener('error', function () {
+            img.style.display = 'none';
+            tip.style.display = '';
+            tip.textContent = '⚠️ 图片加载失败，请检查链接';
+        });
+        img.addEventListener('load', function () {
+            if (!input.value.trim()) return;
+            img.style.display = '';
+            tip.style.display = 'none';
+        });
+
+        btnUpload.addEventListener('click', function () { fileInput.click(); });
+
+        fileInput.addEventListener('change', function () {
+            var file = fileInput.files && fileInput.files[0];
+            if (!file) return;
+            if (file.size > 5 * 1024 * 1024) {
+                alert('图片不能超过 5MB 哦～');
+                return;
+            }
+            var formData = new FormData();
+            formData.append('file', file);
+
+            var metaToken = document.querySelector('meta[name="_csrf"]');
+            var metaHeader = document.querySelector('meta[name="_csrf_header"]');
+            var headers = {};
+            if (metaToken && metaHeader) {
+                headers[metaHeader.getAttribute('content')] = metaToken.getAttribute('content');
+            }
+
+            btnUpload.disabled = true;
+            btnUpload.textContent = '⏳ 上传中…';
+
+            fetch(ctx + 'upload/image', { method: 'POST', headers: headers, body: formData })
+                .then(function (resp) { return resp.json(); })
+                .then(function (data) {
+                    if (data && data.errno === 0 && data.url) {
+                        input.value = data.url;
+                        showPreview(data.url);
+                    } else {
+                        alert('图片上传失败：' + ((data && data.message) || '未知错误'));
+                    }
+                })
+                .catch(function () { alert('图片上传失败，请稍后再试～'); })
+                .finally(function () {
+                    btnUpload.disabled = false;
+                    btnUpload.textContent = '📤 上传图片';
+                    fileInput.value = '';
+                });
+        });
+    })();
+</script>
+</body>
+</html>
