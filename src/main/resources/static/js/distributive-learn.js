@@ -194,6 +194,9 @@
             body: 'questionId=' + encodeURIComponent(currentCard.getAttribute('data-qid'))
                 + '&expression=' + encodeURIComponent(check.expr)
         }).then(function (resp) {
+            if (resp.status === 403 || resp.status === 401) {
+                return { success: false, message: '页面太久没刷新啦，刷新一下再提交吧～' };
+            }
             return resp.json();
         }).then(function (data) {
             if (data && data.success) {

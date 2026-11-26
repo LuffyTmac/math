@@ -84,8 +84,10 @@ public class SecurityConfig {
                 .deleteCookies("JSESSIONID")
                 .permitAll()
             .and()
-            // CSRF：/hello 是纯展示页，若后续做接口再按需放行
-            .csrf().ignoringAntMatchers("/hello");
+            // CSRF：/hello 与 /distributive/submit 都是匿名公开接口。
+            // 学生页可能长时间停留在 Pad 上，session 过期/服务重启后页面里的旧 token 会失效，
+            // 继续校验只会让小朋友看到 403（该接口无登录态、无敏感操作，放行不影响安全）。
+            .csrf().ignoringAntMatchers("/hello", "/distributive/submit");
 
         return http.build();
     }
