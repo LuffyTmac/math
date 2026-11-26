@@ -487,6 +487,105 @@
 
     /* ==================== 开始归类 / 再次归类 ==================== */
 
+    /** 阶段 A：卡片上移的同时，把所有气泡收拢到卡片下方的待飞区，避免和图片叠加 */
+    function stageBubblesIntoTunnels() {
+        var stageRect = stage.getBoundingClientRect();
+        var rowRect = row.getBoundingClientRect();
+        var fieldRect = field.getBoundingClientRect();
+        var bandTop = rowRect.top - stageRect.top + cardHeight() + 14;
+        var bandBottom = stageRect.height - 22;
+        var available = Math.max(80, bandBottom - bandTop);
+        var n = bubbles.length;
+        // 用接近正方形的小格子铺开，行距固定 52px，数量多时自动向甬道深处延伸
+        var cols = Math.max(3, Math.min(8, Math.ceil(Math.sqrt(n))));
+        var rows = Math.max(1, Math.ceil(n / cols));
+        var bandH = Math.min(available, rows * 52);
+        var cellW = stageRect.width / cols;
+        var cellH = bandH / rows;
+
+        bubbles.forEach(function (b, i) {
+            var c = i % cols;
+            var r = Math.floor(i / cols);
+            var cx = c * cellW + cellW / 2;
+            var cy = bandTop + r * cellH + cellH / 2;
+            var tx = cx - fieldRect.left - b.w / 2;
+            var ty = cy - fieldRect.top - b.h / 2;
+
+            var anim = b.el.animate([
+                { transform: 'translate3d(' + b.x + 'px,' + b.y + 'px,0) scale(1)', opacity: 1 },
+                { transform: 'translate3d(' + tx + 'px,' + ty + 'px,0) scale(.9)', opacity: 1 }
+            ], {
+                duration: 420,
+                easing: 'cubic-bezier(.3,.85,.35,1)',
+                fill: 'forwards'
+            });
+            anim.onfinish = (function (bubble, ax, ay, animation) {
+                return function () {
+                    bubble.x = ax;
+                    bubble.y = ay;
+                    bubble.el.style.transform = 'translate3d(' + ax + 'px,' + ay + 'px,0)';
+                    if (animation && animation.cancel) animation.cancel();
+                };
+            })(b, tx, ty, anim);
+        });
+    }
+
+    /** 阶段 B：从待飞区一个一个飞入对应格式栏 */
+    function flyBubblesIntoHoles() {
+        var targets = {};
+        function targetFor(answer) {
+            var lane = laneOf(answer);
+            if (!lane) return null;
+            var key = String(answer.qid) + '|' + lane.getAttribute('data-kind');
+            if (!targets[key]) {
+                var rect = lane.getBoundingClientRect();
+                targets[key] = { x: rect.left + rect.width / 2, y: rect.bottom - 16 };
+            }
+            return targets[key];
+        }
+
+        // 数量多时自动加快节奏，避免几十条算式飞太久
+        var total = bubbles.length;
+        var stagger = total > 40 ? 55 : (total > 24 ? 80 : 110);
+        var flyDur = total > 40 ? 360 : 420;
+
+        var delay = 0;
+        bubbles.forEach(function (b, index) {
+            var target = targetFor(b.a);
+            if (!target) return;
+
+            var rect = b.el.getBoundingClientRect();
+            var dx = target.x - (rect.left + rect.width / 2);
+            var dy = target.y - (rect.top + rect.height / 2);
+            var startX = b.x;
+            var startY = b.y;
+            var endX = startX + dx;
+            var endY = startY + dy;
+            var itemDelay = index * stagger;
+
+            var anim = b.el.animate([
+                { transform: 'translate3d(' + startX + 'px,' + startY + 'px,0) scale(1)', opacity: 1 },
+                { transform: 'translate3d(' + (startX + dx * 0.16) + 'px,' + (startY + dy * 0.45 - 14) + 'px,0) scale(1.06)', opacity: 1, offset: 0.4 },
+                { transform: 'translate3d(' + endX + 'px,' + endY + 'px,0) scale(.58)', opacity: .12 }
+            ], {
+                duration: flyDur,
+                delay: itemDelay,
+                easing: 'cubic-bezier(.35,.6,.3,1)',
+                fill: 'forwards'
+            });
+            delay = Math.max(delay, itemDelay);
+
+            anim.onfinish = (function (bubble) {
+                return function () {
+                    bubble.el.remove();
+                    addChip(bubble.a);
+                };
+            })(b);
+        });
+
+        setTimeout(finishConverge, delay + flyDur + 160);
+    }
+
     function converge() {
         if (busy || !bubbles.length) return;
         busy = true;
@@ -495,72 +594,22 @@
         btn.textContent = '✨ 正在归类…';
         doneFlag.hidden = true;
 
-        // 飞行时云海要盖在卡片/甬道上面，否则气泡会被挡住
         stage.classList.add('is-flying');
         openTunnels();
 
-        // 等甬道展开动画结束再统一测量，避免落点漂移
-        setTimeout(function () {
-            // 每个分栏只测一次
-            var targets = {};
-            function targetFor(answer) {
-                var lane = laneOf(answer);
-                if (!lane) return null;
-                var key = String(answer.qid) + '|' + lane.getAttribute('data-kind');
-                if (!targets[key]) {
-                    var rect = lane.getBoundingClientRect();
-                    targets[key] = { x: rect.left + rect.width / 2, y: rect.bottom - 16 };
-                }
-                return targets[key];
-            }
+        if (reducedMotion) {
+            bubbles.forEach(function (b) { b.el.remove(); addChip(b.a); });
+            bubbles = [];
+            setTimeout(finishConverge, 120);
+            return;
+        }
 
-            var delay = 0;
+        // 阶段 A：照片上移 + 算式整体先落到卡片下方的甬道区域
+        stageBubblesIntoTunnels();
 
-            bubbles.forEach(function (b, index) {
-                var target = targetFor(b.a);
-                if (!target) return;
-
-                if (reducedMotion) {
-                    b.el.remove();
-                    addChip(b.a);
-                    return;
-                }
-
-                var rect = b.el.getBoundingClientRect();
-                var dx = target.x - (rect.left + rect.width / 2);
-                var dy = target.y - (rect.top + rect.height / 2);
-                // 一个一个走：间隔 260ms，单条 700ms，任何时刻最多 3 条在飞
-                var itemDelay = index * 110;
-
-                var anim = b.el.animate([
-                    { transform: 'translate3d(0,0,0) scale(1)', opacity: 1 },
-                    // 先轻微上抛
-                    { transform: 'translate3d(' + (dx * 0.42) + 'px,' + (dy * 0.25 - 34) + 'px,0) scale(1.14)', opacity: 1, offset: 0.3 },
-                    // 再顺着目标方向下坠
-                    { transform: 'translate3d(' + (dx * 0.9) + 'px,' + (dy * 0.82) + 'px,0) scale(.92)', opacity: 1, offset: 0.74 },
-                    { transform: 'translate3d(' + dx + 'px,' + dy + 'px,0) scale(.58)', opacity: .12 }
-                ], {
-                    duration: 380,
-                    delay: itemDelay,
-                    easing: 'cubic-bezier(.35,.6,.3,1)',
-                    fill: 'forwards'
-                });
-                delay = Math.max(delay, itemDelay);
-
-                anim.onfinish = (function (bubble) {
-                    return function () {
-                        bubble.el.remove();
-                        addChip(bubble.a);
-                    };
-                })(b);
-            });
-
-            setTimeout(function () {
-                finishConverge();
-            }, reducedMotion ? 120 : delay + 460);
-        }, TUNNEL_TRANSITION);
+        // 阶段 B：等卡片/甬道就位后，再一个一个飞入对应分栏
+        setTimeout(flyBubblesIntoHoles, Math.max(TUNNEL_TRANSITION, 470) + 40);
     }
-
     function finishConverge() {
         bubbles = [];
         field.style.visibility = 'hidden';

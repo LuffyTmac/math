@@ -705,3 +705,21 @@
 @media (prefers-reduced-motion: reduce) {
     .clear-mask.open, .clear-card, .clear-emoji { animation: none !important; }
 }
+
+/* ============================================================
+   沉浸式看板：隐藏顶部 header，深色背景铺满整屏
+   ============================================================ */
+body.board-immersive { background: #04070f; }
+body.board-immersive .header { display: none; }
+body.board-immersive .main { margin-left: 0; }
+body.board-immersive .dist-content {
+    height: 100vh;
+    padding: 0;
+    gap: 0;
+}
+body.board-immersive .stage {
+    border-radius: 0;
+    box-shadow: none;
+}
+body.board-immersive .dist-content .msg { margin: 10px 14px 0; }
+body.board-immersive .dist-empty { margin: 24px; }
