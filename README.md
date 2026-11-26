@@ -228,6 +228,7 @@ mvn spring-boot:run
 - **题目预览**：控制器用正则去 HTML 标签生成纯文本预览（截断 100 字）。
 - **分页**：MyBatis-Plus `PaginationInnerInterceptor`，列表页支持每页条数切换。
 - **侧边栏**：`common.html` 用 `sec:authorize` 按角色显示菜单（STUDENT 看大厅/我的答题，ADMIN/TEACHER 额外看管理后台）。
+- **学生提交兜底**：页面停留超过 20 分钟再提交会先提示「刷新一下更稳妥」（可刷新或直接提交）；网络异常时提示可「刷新页面 / 再试一次」。
 - **学生提交免 CSRF**：`/distributive/submit` 是匿名公开接口，已在 `SecurityConfig` 中放行 CSRF（Pad 页面长时间停留导致 token 过期时会 403）；管理端接口仍校验 CSRF。
 - **分配律算式校验**：`ExpressionValidator` 先做 NFKC 规范化（全角转半角、`×`→`*`、去空白），
   只放行 `a*(b+c)` 与 `a*b+a*c` 两种结构；展开式要求两个乘法有相同因数；错误提示按场景返回儿童化文案。

@@ -24,12 +24,15 @@
     var msgEmoji = document.getElementById('msgEmoji');
     var msgText = document.getElementById('msgText');
     var msgOk = document.getElementById('msgOk');
+    var msgAlt = document.getElementById('msgAlt');
 
     if (!mask || !input) return;
 
     var currentCard = null;
     var submitting = false;
     var msgTimer = null;
+    var lastActiveAt = Date.now();
+    var LONG_IDLE_MS = 20 * 60 * 1000; // 20 分钟没有任何操作，视为“可能过期”
 
     /* ==================== 校验（与服务端同一套规则） ==================== */
 
@@ -82,16 +85,41 @@
 
     /* ==================== 居中提示框 ==================== */
 
-    function showMsg(type, text, autoCloseMs) {
+    function reloadPage() {
+        window.location.reload();
+    }
+
+    function showMsg(type, text, opts) {
+        opts = opts || {};
         msgMask.setAttribute('data-type', type);
-        msgEmoji.textContent = type === 'error' ? '😯' : '🎉';
+        msgEmoji.textContent = opts.emoji
+            || (type === 'error' ? '😯' : (type === 'success' ? '🎉' : '⏰'));
         msgText.textContent = text;
+
+        msgOk.textContent = opts.okLabel || '好的';
+        msgOk.onclick = function () {
+            hideMsg();
+            if (opts.onOk) opts.onOk();
+        };
+
+        if (opts.altLabel) {
+            msgAlt.style.display = '';
+            msgAlt.textContent = opts.altLabel;
+            msgAlt.onclick = function () {
+                hideMsg();
+                if (opts.onAlt) opts.onAlt();
+            };
+        } else {
+            msgAlt.style.display = 'none';
+            msgAlt.onclick = null;
+        }
+
         msgMask.classList.add('open');
         msgMask.setAttribute('aria-hidden', 'false');
 
         clearTimeout(msgTimer);
-        if (autoCloseMs) {
-            msgTimer = setTimeout(hideMsg, autoCloseMs);
+        if (opts.autoClose) {
+            msgTimer = setTimeout(hideMsg, opts.autoClose);
         }
     }
 
@@ -101,7 +129,6 @@
         msgMask.setAttribute('aria-hidden', 'true');
     }
 
-    if (msgOk) msgOk.addEventListener('click', hideMsg);
     if (msgMask) {
         msgMask.addEventListener('click', function (e) {
             if (e.target === msgMask) hideMsg();
@@ -167,6 +194,12 @@
         return meta ? meta.getAttribute('content') : 'X-CSRF-TOKEN';
     }
 
+    /** 页面是否“放太久没动过” */
+    function isStalePage() {
+        return Date.now() - lastActiveAt > LONG_IDLE_MS;
+    }
+
+    /** 提交入口：先看页面是否过旧，过旧先友好提示，可选择刷新或直接提交 */
     function submit() {
         if (submitting) return;
         var check = validate(input.value);
@@ -175,9 +208,31 @@
             return;
         }
         if (!currentCard) {
-            showMsg('error', '题目信息丢失，刷新页面再试试吧～');
+            showMsg('error', '题目信息丢失，刷新页面再试试吧～', {
+                okLabel: '🔄 刷新页面', onOk: reloadPage
+            });
             return;
         }
+        if (isStalePage()) {
+            showMsg('warn', '页面放了好一会儿啦～ 刷新一下再提交，交上去更稳妥哦。', {
+                emoji: '⏰',
+                okLabel: '🔄 刷新页面', onOk: reloadPage,
+                altLabel: '直接提交', onAlt: doSubmit
+            });
+            return;
+        }
+        doSubmit();
+    }
+
+    /** 真正发请求 */
+    function doSubmit() {
+        if (submitting) return;
+        var check = validate(input.value);
+        if (!check.ok) {
+            showMsg('error', check.msg);
+            return;
+        }
+        if (!currentCard) return;
 
         submitting = true;
         btnSubmit.disabled = true;
@@ -195,28 +250,53 @@
                 + '&expression=' + encodeURIComponent(check.expr)
         }).then(function (resp) {
             if (resp.status === 403 || resp.status === 401) {
-                return { success: false, message: '页面太久没刷新啦，刷新一下再提交吧～' };
+                return { success: false, stale: true, message: '页面太久没刷新啦，刷新一下再提交吧～' };
+            }
+            if (!resp.ok) {
+                return { success: false, stale: true, message: '提交没成功，稍后再试一次吧～' };
             }
             return resp.json();
         }).then(function (data) {
             if (data && data.success) {
+                lastActiveAt = Date.now();
                 var card = currentCard;
                 closeSheet();
                 card.classList.add('done');
                 var go = card.querySelector('.qgo');
                 if (go) go.textContent = '继续提交';
-                showMsg('success', data.message || '太棒了！已经交给老师啦～', 2600);
-            } else {
-                showMsg('error', (data && data.message) || '提交失败，再试一次吧～');
+                showMsg('success', data.message || '太棒了！已经交给老师啦～', { autoClose: 2600 });
+                return;
             }
+
+            var message = (data && data.message) || '提交失败，再试一次吧～';
+            if (data && data.stale) {
+                showMsg('error', message, {
+                    okLabel: '🔄 刷新页面', onOk: reloadPage,
+                    altLabel: '再试一次', onAlt: doSubmit
+                });
+                return;
+            }
+            // 题目已被删除/下架等“页面数据过期”的情况，建议刷新
+            if (message.indexOf('不存在') >= 0 || message.indexOf('下架') >= 0) {
+                showMsg('error', message, { okLabel: '🔄 刷新页面', onOk: reloadPage });
+                return;
+            }
+            showMsg('error', message);
         }).catch(function () {
-            showMsg('error', '网络开小差了，稍后再试试～');
+            showMsg('error', '提交没成功，可能是网络或页面太久没刷新了～', {
+                okLabel: '🔄 刷新页面', onOk: reloadPage,
+                altLabel: '再试一次', onAlt: doSubmit
+            });
         }).finally(function () {
             submitting = false;
             btnSubmit.disabled = false;
             btnSubmit.textContent = oldText;
         });
     }
+    // 记录最近一次操作时间，用于判断页面是否“放太久”
+    ['pointerdown', 'keydown', 'touchstart', 'wheel'].forEach(function (evt) {
+        document.addEventListener(evt, function () { lastActiveAt = Date.now(); }, { passive: true });
+    });
 
     /* ==================== 事件绑定 ==================== */
 

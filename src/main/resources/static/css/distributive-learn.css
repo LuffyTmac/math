@@ -315,21 +315,36 @@ body.pad-shell {
 }
 .msg-mask[data-type="error"] .msg-text { color: #d14343; }
 .msg-mask[data-type="success"] .msg-text { color: #2f8f4e; }
-.msg-ok {
+.msg-btns {
+    display: flex;
+    gap: 10px;
     margin-top: 20px;
-    width: 100%;
+}
+.msg-btns button {
+    flex: 1;
     height: 48px;
     border: none;
     border-radius: 999px;
-    background: linear-gradient(135deg, #4A90E2, #6fb1f5);
-    color: #fff;
     font-size: 15px;
     font-weight: 800;
+    font-family: inherit;
     cursor: pointer;
+}
+.msg-ok {
+    background: linear-gradient(135deg, #4A90E2, #6fb1f5);
+    color: #fff;
 }
 .msg-mask[data-type="success"] .msg-ok { background: linear-gradient(135deg, #66BB6A, #85d189); }
 .msg-mask[data-type="error"] .msg-ok { background: linear-gradient(135deg, #e05252, #ec7878); }
+.msg-mask[data-type="warn"] .msg-ok { background: linear-gradient(135deg, #ff9f43, #ff7a45); }
 .msg-ok:active { transform: scale(.98); }
+.msg-alt {
+    background: #f0f3f7;
+    color: #6b7a8d;
+}
+.msg-alt:hover { background: #e6ebf2; }
+.msg-alt:active { transform: scale(.98); }
+.msg-mask[data-type="warn"] .msg-text { color: #c07a1e; }
 
 /* ============================================================
    响应式
