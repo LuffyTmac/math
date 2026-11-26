@@ -208,12 +208,24 @@
 
             var el = createBubbleEl(answer);
             el.classList.add('fresh');
+            field.classList.add('has-fresh');
+            // 左上角挂一个 NEW 小标签，动画结束时一并移除
+            var newTag = document.createElement('span');
+            newTag.className = 'new-tag';
+            newTag.textContent = 'NEW';
+            el.appendChild(newTag);
             // 多条同时到达时错开一点，形成“一个接一个冒出来”的感觉
             el.style.animationDelay = Math.min(index * 70, 700) + 'ms';
-            el.addEventListener('animationend', function () {
+            el.addEventListener('animationend', function onFreshEnd(e) {
+                if (e.target !== el) return; // 忽略标签自身的动画
+                el.removeEventListener('animationend', onFreshEnd);
                 el.classList.remove('fresh');
                 el.style.animationDelay = '';
-            }, { once: true });
+                if (newTag.parentNode) newTag.parentNode.removeChild(newTag);
+                if (!field.querySelector('.bubble.fresh')) {
+                    field.classList.remove('has-fresh');
+                }
+            });
             var b = {
                 a: answer, el: el,
                 x: rand(10, Math.max(10, size.w - 120)),
@@ -223,6 +235,8 @@
                 vy: rand(0.06, 0.16) * (Math.random() < 0.5 ? -1 : 1)
             };
             bubbles.push(b);
+            el.style.setProperty('--bx', b.x.toFixed(1) + 'px');
+            el.style.setProperty('--by', b.y.toFixed(1) + 'px');
             render(b);
         });
         updateDensity();
@@ -315,6 +329,7 @@
 
         for (i = 0; i < bubbles.length; i++) {
             b = bubbles[i];
+            if (b.el.classList.contains('fresh')) continue;
             b.x += b.vx;
             b.y += b.vy;
             if (b.x <= 0 || b.x >= size.w - b.w) {
@@ -333,6 +348,7 @@
                 for (var j = i + 1; j < bubbles.length; j++) {
                     var a = bubbles[i];
                     var c = bubbles[j];
+                    if (a.el.classList.contains('fresh') || c.el.classList.contains('fresh')) continue;
                     var ox = (a.w + c.w) / 2 + 10 - Math.abs((a.x + a.w / 2) - (c.x + c.w / 2));
                     var oy = (a.h + c.h) / 2 + 6 - Math.abs((a.y + a.h / 2) - (c.y + c.h / 2));
                     if (ox > 0 && oy > 0) {
@@ -355,7 +371,9 @@
         }
 
         for (i = 0; i < bubbles.length; i++) {
-            render(bubbles[i]);
+            if (!bubbles[i].el.classList.contains('fresh')) {
+                render(bubbles[i]);
+            }
         }
         rafId = requestAnimationFrame(tick);
     }
@@ -601,6 +619,7 @@
         doneFlag.hidden = true;
 
         stage.classList.add('is-flying');
+        field.classList.remove('has-fresh');
         openTunnels();
 
         if (reducedMotion) {
