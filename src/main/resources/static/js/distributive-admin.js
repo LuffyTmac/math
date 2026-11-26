@@ -193,7 +193,7 @@
         }
 
         var size = fieldSize();
-        items.forEach(function (item) {
+        items.forEach(function (item, index) {
             var answer = {
                 id: parseInt(item.id, 10) || 0,
                 qid: String(item.questionId),
@@ -208,6 +208,12 @@
 
             var el = createBubbleEl(answer);
             el.classList.add('fresh');
+            // 多条同时到达时错开一点，形成“一个接一个冒出来”的感觉
+            el.style.animationDelay = Math.min(index * 70, 700) + 'ms';
+            el.addEventListener('animationend', function () {
+                el.classList.remove('fresh');
+                el.style.animationDelay = '';
+            }, { once: true });
             var b = {
                 a: answer, el: el,
                 x: rand(10, Math.max(10, size.w - 120)),
