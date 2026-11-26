@@ -26,6 +26,10 @@
     var fieldEmpty = document.getElementById('fieldEmpty');
     var pollState = document.getElementById('pollState');
     var btnRefresh = document.getElementById('btnRefresh');
+    var btnClear = document.getElementById('btnClear');
+    var clearMask = document.getElementById('clearMask');
+    var clearConfirm = document.getElementById('clearConfirm');
+    var clearCancel = document.getElementById('clearCancel');
     var doneFlag = document.getElementById('doneFlag');
     var exprData = document.getElementById('exprData');
 
@@ -219,6 +223,7 @@
 
         if (fieldEmpty) fieldEmpty.style.display = 'none';
         btn.disabled = false;
+        if (btnClear) btnClear.disabled = false;
         if (!drifting) startDrift();
     }
 
@@ -292,6 +297,7 @@
         if (fieldEmpty) fieldEmpty.style.display = 'none';
         cntTotal.textContent = answers.length;
         btn.disabled = false;
+        if (btnClear) btnClear.disabled = false;
     }
 
     /* ==================== 游动 ==================== */
@@ -468,6 +474,10 @@
                 refreshCounts();
             }
             cntTotal.textContent = Math.max(0, answers.length);
+            if (!answers.length) {
+                btn.disabled = true;
+                if (btnClear) btnClear.disabled = true;
+            }
             showAjaxToast(data.message || '已删除');
         }).catch(function () {
             delBtn.disabled = false;
@@ -617,7 +627,102 @@
             .catch(function () { /* 网络抖动忽略，下次再来 */ });
     }
 
+    /* ==================== 擦除所有算式 ==================== */
+
+    function openClearConfirm() {
+        if (busy || !answers.length) return;
+        clearMask.classList.add('open');
+        clearMask.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeClearConfirm() {
+        if (!clearMask) return;
+        clearMask.classList.remove('open');
+        clearMask.setAttribute('aria-hidden', 'true');
+    }
+
+    function doClearAll() {
+        if (busy || !answers.length) return;
+
+        var meta = document.querySelector('meta[name="_csrf"]');
+        var headerMeta = document.querySelector('meta[name="_csrf_header"]');
+        var token = meta ? meta.getAttribute('content') : '';
+        var headerName = headerMeta ? headerMeta.getAttribute('content') : 'X-CSRF-TOKEN';
+        var ctx = body.getAttribute('data-ctx') || '/';
+        if (ctx.charAt(ctx.length - 1) !== '/') ctx += '/';
+
+        var headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' };
+        headers[headerName] = token;
+
+        btnClear.disabled = true;
+        btnClear.textContent = '🧹 擦除中…';
+
+        fetch(ctx + 'distributive/admin/answer/clear-json', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: headers
+        }).then(function (resp) {
+            return resp.json();
+        }).then(function (data) {
+            if (!data || !data.success) {
+                showAjaxToast((data && data.message) || '擦除失败，稍后再试', true);
+                btnClear.disabled = false;
+                btnClear.textContent = '🧹 擦除所有算式';
+                return;
+            }
+
+            // 清空本地状态与界面，不刷新页面
+            stopDrift();
+            bubbles.forEach(function (b) { b.el.remove(); });
+            bubbles = [];
+            pendingItems = [];
+            row.querySelectorAll('.lane-col').forEach(function (col) { col.innerHTML = ''; });
+            answers = [];
+            refreshCounts();
+            cntTotal.textContent = '0';
+            doneFlag.hidden = true;
+            stage.classList.remove('is-flying');
+            closeTunnels();
+            field.style.visibility = '';
+            btn.classList.remove('is-reset');
+            btn.textContent = '🧩 开始归类';
+            btn.disabled = true;
+            layoutField();
+            if (fieldEmpty) fieldEmpty.style.display = '';
+            btnClear.disabled = true;
+            btnClear.textContent = '🧹 擦除所有算式';
+            showAjaxToast(data.message || '已擦除所有算式');
+        }).catch(function () {
+            showAjaxToast('网络开小差了，稍后再试', true);
+            btnClear.disabled = false;
+            btnClear.textContent = '🧹 擦除所有算式';
+        });
+    }
+
     // 手动刷新：整页重新加载，回到「未归类」的初始状态
+    if (btnClear) {
+        btnClear.addEventListener('click', openClearConfirm);
+    }
+    if (clearConfirm) {
+        clearConfirm.addEventListener('click', function () {
+            closeClearConfirm();
+            doClearAll();
+        });
+    }
+    if (clearCancel) {
+        clearCancel.addEventListener('click', closeClearConfirm);
+    }
+    if (clearMask) {
+        clearMask.addEventListener('click', function (e) {
+            if (e.target === clearMask) closeClearConfirm();
+        });
+    }
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && clearMask && clearMask.classList.contains('open')) {
+            closeClearConfirm();
+        }
+    });
+
     if (btnRefresh) {
         btnRefresh.addEventListener('click', function () {
             var ctx = body.getAttribute('data-ctx') || '/';

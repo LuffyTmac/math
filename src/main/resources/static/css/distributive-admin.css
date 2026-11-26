@@ -592,3 +592,116 @@
     pointer-events: none;
     will-change: transform;
 }
+
+/* ---------- 「擦除所有算式」按钮 ---------- */
+.tool-btn.tool-danger {
+    border-color: rgba(255, 120, 120, .38);
+    color: #ffb4b4;
+    background: rgba(255, 80, 80, .08);
+}
+.tool-btn.tool-danger:hover {
+    background: rgba(255, 80, 80, .18);
+    border-color: rgba(255, 120, 120, .62);
+    color: #ffd6d6;
+}
+.tool-btn:disabled {
+    opacity: .38;
+    cursor: not-allowed;
+}
+.tool-btn:disabled:hover {
+    background: rgba(255, 255, 255, .05);
+    border-color: rgba(255, 255, 255, .14);
+    color: #9fd9ff;
+}
+.tool-btn.tool-danger:disabled:hover {
+    background: rgba(255, 80, 80, .08);
+    border-color: rgba(255, 120, 120, .38);
+    color: #ffb4b4;
+}
+
+/* ============================================================
+   「擦除所有算式」卡通确认弹框
+   ============================================================ */
+.clear-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(8, 18, 34, .58);
+    -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
+}
+.clear-mask.open { display: flex; animation: clearMaskIn .2s ease; }
+@keyframes clearMaskIn { from { opacity: 0; } to { opacity: 1; } }
+
+.clear-card {
+    width: min(430px, 88vw);
+    padding: 26px 26px 22px;
+    text-align: center;
+    border-radius: 26px;
+    background: linear-gradient(180deg, #fffdf8 0%, #fff3e2 100%);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, .45),
+                0 0 0 6px rgba(255, 255, 255, .10),
+                inset 0 1px 0 rgba(255, 255, 255, .9);
+    animation: clearCardIn .3s cubic-bezier(.34, 1.5, .64, 1);
+}
+@keyframes clearCardIn {
+    from { opacity: 0; transform: translateY(14px) scale(.92); }
+    to   { opacity: 1; transform: none; }
+}
+
+.clear-emoji {
+    font-size: 56px;
+    line-height: 1;
+    margin-bottom: 8px;
+    animation: clearWobble 1.8s ease-in-out infinite;
+}
+@keyframes clearWobble {
+    0%, 100% { transform: rotate(-7deg) scale(1); }
+    50%      { transform: rotate(7deg) scale(1.06); }
+}
+
+.clear-title {
+    font-size: 19px;
+    font-weight: 800;
+    color: #3d2b1f;
+    letter-spacing: .02em;
+}
+.clear-text {
+    margin: 10px 0 20px;
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: #8a7462;
+}
+
+.clear-actions { display: flex; gap: 12px; }
+.clear-btn {
+    flex: 1;
+    height: 46px;
+    border: none;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+}
+.clear-btn.ghost {
+    background: #f2ece3;
+    color: #8a7462;
+}
+.clear-btn.ghost:hover { background: #e9e0d4; }
+.clear-btn.danger {
+    color: #fff;
+    background: linear-gradient(135deg, #ff8a5c, #ff5f6d);
+    box-shadow: 0 6px 16px rgba(255, 95, 109, .38);
+}
+.clear-btn.danger:hover { transform: translateY(-1px); box-shadow: 0 9px 22px rgba(255, 95, 109, .5); }
+.clear-btn.danger:active { transform: scale(.97); }
+
+@media (prefers-reduced-motion: reduce) {
+    .clear-mask.open, .clear-card, .clear-emoji { animation: none !important; }
+}

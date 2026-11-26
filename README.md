@@ -32,7 +32,7 @@
 ### 乘法分配律模块
 - **admin / teacher**：题目只维护图片（可选详细说明），保存草稿 / 发布 / 下架 / 删除（统一在「题目管理」页操作）；
   列表页是「一行四卡 + 科幻云海 + 甬道」（按 `sort_order` 取前 4 条）——默认甬道收起、卡片贴底，算式以霓虹气泡占满上方；
-  点「开始归类」后卡片顶到顶部、甬道铺满下方（甬道内按 A×(B+C) / A×B＋A×C 分两栏），算式一个一个飞入对应栏；固定 15s 自动刷新 + 手动「刷新」按钮（整页重载回到未归类状态），可删除单条算式。
+  点「开始归类」后卡片顶到顶部、甬道铺满下方（甬道内按 A×(B+C) / A×B＋A×C 分两栏），算式一个一个飞入对应栏；工具栏还有「🧹 擦除所有算式」可一键清空学生提交；固定 15s 自动刷新 + 手动「刷新」按钮（整页重载回到未归类状态），可删除单条算式。
 - **学生 / 游客**：Pad 版学习页（按 `sort_order` 默认展示前 4 道题，满屏 2×2 大图卡片 + 漂浮数学符号，无任何标题/导航/题号文字），点卡片弹出答题层，
   用符号键盘输入算式（答题层也只保留图片和键盘）；只接受两种分配律写法：`a*(b+c)` 与 `a*b+a*c`（含减号）。成功/错误提示都弹在屏幕正中。
 - 学生提交不记录身份，提交即出现在教师端云海。
@@ -190,6 +190,8 @@ math/
 | `/distributive/admin/add` | ADMIN/TEACHER | 新增分配律题目 |
 | `/distributive/admin/edit` | ADMIN/TEACHER | 编辑分配律题目 |
 | `/distributive/admin/answers` | ADMIN/TEACHER | 轮询新算式（JSON，`?sinceId=`） |
+| `/distributive/admin/answer/delete-json` | ADMIN/TEACHER | 删除单条算式（JSON，AJAX） |
+| `/distributive/admin/answer/clear-json` | ADMIN/TEACHER | 擦除所有学生算式（逻辑删除，JSON） |
 | `/logout` | 公开 | 退出（POST） |
 
 ## 运行前准备

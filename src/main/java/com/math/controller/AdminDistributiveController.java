@@ -297,6 +297,21 @@ public class AdminDistributiveController {
         return result;
     }
 
+    /**
+     * 擦除所有学生算式（逻辑删除）。
+     * 管理员/教师在看板点「擦除所有算式」时调用，返回被擦除的条数。
+     */
+    @PostMapping("/answer/clear-json")
+    @ResponseBody
+    public Map<String, Object> clearAnswersJson() {
+        int count = answerMapper.delete(new LambdaQueryWrapper<DistributiveAnswer>());
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("count", count);
+        result.put("message", count > 0 ? "已擦除 " + count + " 条学生算式" : "没有可擦除的算式");
+        return result;
+    }
+
     /** 删除单条学生算式（表单兜底，删除结果用页面中间的弹框提示） */
     @PostMapping("/answer/delete")
     public String deleteAnswer(@RequestParam Long id, RedirectAttributes ra) {

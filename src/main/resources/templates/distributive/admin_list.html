@@ -33,6 +33,9 @@
                 <div class="stage-toolbar">
                     <button type="button" class="btn-magic" id="btnMagic"
                             th:disabled="${totalAnswers == null or totalAnswers == 0}">🧩 开始归类</button>
+                    <button type="button" class="tool-btn tool-danger" id="btnClear"
+                            title="删除所有学生提交的算式"
+                            th:disabled="${totalAnswers == null or totalAnswers == 0}">🧹 擦除所有算式</button>
                     <span class="stage-meta">
                         <b id="cntTotal" th:text="${totalAnswers}">0</b> 条学生算式
                         <span class="dot"></span>
@@ -45,7 +48,7 @@
 
                 <div class="field" id="field">
                     <div class="field-empty" id="fieldEmpty"
-                         th:if="${totalAnswers == null or totalAnswers == 0}">
+                         th:style="${totalAnswers != null and totalAnswers > 0} ? 'display:none;' : ''">
                         😶 还没有学生提交算式，孩子们提交后会飘到这里～
                     </div>
                 </div>
@@ -87,6 +90,22 @@
         </div>
     </div>
 </div>
+<!-- 擦除所有算式的卡通确认弹框 -->
+<div class="clear-mask" id="clearMask" aria-hidden="true">
+    <div class="clear-card" role="dialog" aria-modal="true" aria-labelledby="clearTitle">
+        <div class="clear-emoji">🧹</div>
+        <div class="clear-title" id="clearTitle">要把算式全部擦掉吗？</div>
+        <div class="clear-text">
+            所有同学提交的算式都会被擦干净，<br/>
+            就像用橡皮擦擦掉一样，擦掉就回不来啦～
+        </div>
+        <div class="clear-actions">
+            <button type="button" class="clear-btn ghost" id="clearCancel">再想想</button>
+            <button type="button" class="clear-btn danger" id="clearConfirm">🧹 全部擦掉</button>
+        </div>
+    </div>
+</div>
+
 <!-- 删除算式等操作的居中提示框（自动消失，不在顶部留痕） -->
 <div class="flash-toast" id="flashToast" th:if="${toastMsg != null}"
      th:attr="data-type=${toastType != null ? toastType : 'success'}">
