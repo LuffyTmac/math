@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>自定义书架 - 数学乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="stylesheet" th:href="@{/css/shelf.css}"/>
+</head>
+<body th:attr="data-ctx=@{/}">
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('bookshelf')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('自定义书架')"></header>
+
+        <div class="content shelf-content">
+            <div class="shelf-page" id="shelfPage"
+                 data-left-layers="3" data-left-books="10"
+                 data-right-layers="3" data-right-books="10">
+                <div class="main-container">
+                    <div class="columns-wrapper">
+                        <!-- 左列：控制 + 书架（浅暖木色） -->
+                        <div class="column">
+                            <div class="control-card left-control">
+                                <div class="stepper">
+                                    <span class="stepper-label">书架层数</span>
+                                    <button class="btn-step" id="leftLayersMinus" aria-label="左书架层数减一">−</button>
+                                    <span class="value-display" id="leftLayersVal">3</span>
+                                    <button class="btn-step" id="leftLayersPlus" aria-label="左书架层数加一">+</button>
+                                </div>
+                                <div class="stepper">
+                                    <span class="stepper-label">每层书本</span>
+                                    <button class="btn-step" id="leftBooksMinus" aria-label="左书架每层书本减一">−</button>
+                                    <span class="value-display" id="leftBooksVal">10</span>
+                                    <button class="btn-step" id="leftBooksPlus" aria-label="左书架每层书本加一">+</button>
+                                </div>
+                            </div>
+                            <div class="shelf-card left-shelf">
+                                <div class="shelf-header">
+                                    <h2>📖 左书架</h2>
+                                    <span class="badge" id="leftBadge">3层 · 每层10本</span>
+                                </div>
+                                <div class="shelf-visual" id="leftShelfVisual"></div>
+                            </div>
+                        </div>
+
+                        <!-- 右列：控制 + 书架（深暖木色） -->
+                        <div class="column">
+                            <div class="control-card right-control">
+                                <div class="stepper">
+                                    <span class="stepper-label">书架层数</span>
+                                    <button class="btn-step" id="rightLayersMinus" aria-label="右书架层数减一">−</button>
+                                    <span class="value-display" id="rightLayersVal">3</span>
+                                    <button class="btn-step" id="rightLayersPlus" aria-label="右书架层数加一">+</button>
+                                </div>
+                                <div class="stepper">
+                                    <span class="stepper-label">每层书本</span>
+                                    <button class="btn-step" id="rightBooksMinus" aria-label="右书架每层书本减一">−</button>
+                                    <span class="value-display" id="rightBooksVal">10</span>
+                                    <button class="btn-step" id="rightBooksPlus" aria-label="右书架每层书本加一">+</button>
+                                </div>
+                            </div>
+                            <div class="shelf-card right-shelf">
+                                <div class="shelf-header">
+                                    <h2>📖 右书架</h2>
+                                    <span class="badge" id="rightBadge">3层 · 每层10本</span>
+                                </div>
+                                <div class="shelf-visual" id="rightShelfVisual"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 提交按钮：两列正下方居中 -->
+                    <div class="submit-area">
+                        <button class="btn-submit" id="submitBtn">提 交</button>
+                    </div>
+
+                    <p class="shelf-latest" id="shelfLatest">
+                        已提交 <b id="shelfCount" th:text="${submitCount}">0</b> 次
+                    </p>
+                </div>
+
+                <!-- 轻提示 -->
+                <div class="toast" id="toast"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/shelf.js}"></script>
+</body>
+</html>

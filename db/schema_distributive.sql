@@ -34,7 +34,7 @@ DROP TABLE IF EXISTS `distributive_answer`;
 CREATE TABLE `distributive_answer` (
     `id`          BIGINT       NOT NULL AUTO_INCREMENT        COMMENT '主键',
     `question_id` BIGINT       NOT NULL                       COMMENT '所属题目 id',
-    `expression`  VARCHAR(200) NOT NULL                       COMMENT '规范化后的算式，如 3*(4+5) 或 3*4+3*5',
+    `expression`  VARCHAR(200) NOT NULL                       COMMENT '规范化后的算式（乘号用 ×），如 3×(4+5) 或 3×4+3×5',
     `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP                        COMMENT '提交时间（甬道内排序）',
     `update_time` DATETIME     NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted`     TINYINT      NOT NULL DEFAULT 0             COMMENT '逻辑删除：0 未删 1 已删（教师可删乱填内容）',

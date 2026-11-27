@@ -3,61 +3,37 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>首页 - 数学教学后台</title>
+    <title>后台首页 - 数学乐园</title>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <style>
+        .quick-card .qd {
+            margin-top: 4px;
+            font-size: 12.5px;
+            color: #8a99aa;
+        }
+    </style>
 </head>
 <body>
 <div class="layout">
-    <!-- 侧边栏 -->
     <nav th:replace="layout/common :: sidebar('index')"></nav>
 
-    <!-- 主区域 -->
     <div class="main">
-        <header th:replace="layout/common :: header('首页')"></header>
+        <header th:replace="layout/common :: header('后台首页')"></header>
 
         <div class="content">
-            <!-- 欢迎卡片 -->
-            <div class="card">
-                <div class="card-title">欢迎回来</div>
-                <p>你好，<strong th:text="${username}">用户</strong>！欢迎使用数学教学后台管理系统。
-                   当前为基础版本，后续将逐步完善各功能模块。</p>
-            </div>
-
-            <!-- 统计占位（数据后续接入） -->
-            <div class="stat-grid">
-                <div class="stat-card">
-                    <div class="stat-num">-</div>
-                    <div class="stat-label">用户总数</div>
-                </div>
-                <div class="stat-card green">
-                    <div class="stat-num">-</div>
-                    <div class="stat-label">题目总数</div>
-                </div>
-                <div class="stat-card orange">
-                    <div class="stat-num">-</div>
-                    <div class="stat-label">课程总数</div>
-                </div>
-                <div class="stat-card purple">
-                    <div class="stat-num">-</div>
-                    <div class="stat-label">今日访问</div>
-                </div>
-            </div>
-
             <!-- 快捷入口 -->
             <div class="card">
                 <div class="card-title">快捷入口</div>
                 <div class="quick-grid">
-                    <a th:href="@{/user/list}" class="quick-card">
-                        <div class="qi">👥</div>
-                        <div class="qt">用户管理</div>
+                    <a th:href="@{/distributive/admin/list}" class="quick-card">
+                        <div class="qi">🧩</div>
+                        <div class="qt">分配律看板</div>
+                        <div class="qd">题目卡片 + 学生算式归类</div>
                     </a>
-                    <a th:href="@{/bounty/admin/list}" class="quick-card">
-                        <div class="qi">📚</div>
-                        <div class="qt">题目管理</div>
-                    </a>
-                    <a th:href="@{/bounty/hall}" class="quick-card">
-                        <div class="qi">🌟</div>
-                        <div class="qt">悬赏大厅</div>
+                    <a th:href="@{/equation/admin/board}" class="quick-card">
+                        <div class="qi">✍️</div>
+                        <div class="qt">自定义等式看板</div>
+                        <div class="qd">查看学生提交的等式</div>
                     </a>
                 </div>
             </div>

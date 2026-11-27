@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>自定义等式看板 - 数学乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="stylesheet" th:href="@{/css/equation-board.css}"/>
+</head>
+<body th:attr="data-ctx=@{/}">
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('equation-board')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('自定义等式看板')"></header>
+
+        <div class="content eq-board-content">
+            <div class="eq-board-card">
+                <div class="eq-board-head">
+                    <div>
+                        <h2>学生提交的等式 <span class="eq-board-count" id="eqTotal" th:text="${total}">0</span></h2>
+                        <p>点击「整理」把飘着的算式整齐排好</p>
+                    </div>
+                    <button type="button" class="eq-board-btn" id="btnOrganize">🧩 整理</button>
+                </div>
+
+                <div class="eq-board-stage" id="stage" th:attr="data-max-id=${maxId}">
+                    <div class="eq-bubble" th:each="a : ${answers}"
+                         th:classappend="${a.correct == 1} ? 'ok' : 'bad'">
+                        <span class="eq-b-expr" th:text="${a.expression}">3×(4+5)=3×4+3×5</span>
+                        <span class="eq-b-who" th:text="${a.studentName != null ? a.studentName : '学生'}">学生</span>
+                    </div>
+
+                    <div class="eq-board-empty" th:if="${answers == null or answers.isEmpty()}">
+                        还没有学生提交等式～
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/equation-board.js}"></script>
+</body>
+</html>

@@ -6,73 +6,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    <title>乘法分配律 - 数学乐园</title>
+    <title>分配律列算式 - 数学乐园</title>
     <link rel="stylesheet" th:href="@{/css/admin.css}"/>
     <link rel="stylesheet" th:href="@{/css/distributive-learn.css}"/>
 </head>
-<body class="pad-shell" th:attr="data-ctx=@{/}">
+<body class="pad-shell learn-embed" th:attr="data-ctx=@{/}">
 
-<!-- 背景漂浮的数学符号（与登录页同一套风格） -->
-<div class="deco-layer" aria-hidden="true">
-    <span class="float-symbol fs1">➕</span>
-    <span class="float-symbol fs2">🔢</span>
-    <span class="float-symbol fs3">⭐</span>
-    <span class="float-symbol fs4">➗</span>
-    <span class="float-symbol fs5">📐</span>
-    <span class="float-symbol fs6">✖️</span>
-    <span class="float-symbol fs7">✏️</span>
-</div>
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('distributive-learn')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('分配律列算式')"></header>
+        <div class="content learn-content">
 
-<!-- 只有卡片，没有任何标题/导航文字 -->
-<main class="pad-main">
-    <div class="qgrid" th:if="${questions != null and !questions.isEmpty()}">
-        <div class="qcard" th:each="q : ${questions}"
-             th:attr="data-qid=${q.id},data-img=${q.imageUrl != null ? q.imageUrl : ''}"
-             tabindex="0" role="button" aria-label="点击列算式">
-            <div class="qframe">
-                <img th:if="${q.imageUrl != null and !q.imageUrl.isEmpty()}"
-                     th:src="${q.imageUrl}" alt=""/>
-                <span class="qempty" th:if="${q.imageUrl == null or q.imageUrl.isEmpty()}">🖼</span>
+        <!-- 背景漂浮的数学符号（与登录页同一套风格） -->
+        <div class="deco-layer" aria-hidden="true">
+            <span class="float-symbol fs1">➕</span>
+            <span class="float-symbol fs2">🔢</span>
+            <span class="float-symbol fs3">⭐</span>
+            <span class="float-symbol fs4">➗</span>
+            <span class="float-symbol fs5">📐</span>
+            <span class="float-symbol fs6">✖️</span>
+            <span class="float-symbol fs7">✏️</span>
+        </div>
+
+        <!-- 只有卡片，没有任何标题/导航文字 -->
+        <main class="pad-main">
+            <div class="qgrid" th:if="${questions != null and !questions.isEmpty()}">
+                <div class="qcard" th:each="q : ${questions}"
+                     th:attr="data-qid=${q.id},data-img=${q.imageUrl != null ? q.imageUrl : ''}"
+                     tabindex="0" role="button" aria-label="点击列算式">
+                    <div class="qframe">
+                        <img th:if="${q.imageUrl != null and !q.imageUrl.isEmpty()}"
+                             th:src="${q.imageUrl}" alt=""/>
+                        <span class="qempty" th:if="${q.imageUrl == null or q.imageUrl.isEmpty()}">🖼</span>
+                    </div>
+                    <div class="qgo"><span class="qgo-ico">✏️</span>我要列算式</div>
+                </div>
             </div>
-            <div class="qgo"><span class="qgo-ico">✏️</span>我要列算式</div>
-        </div>
-    </div>
 
-    <div class="empty" th:if="${questions == null or questions.isEmpty()}">
-        <div class="empty-emoji">😶</div>
-        <p>还没有题目，等老师发布后再来吧～</p>
-    </div>
-</main>
+            <div class="empty" th:if="${questions == null or questions.isEmpty()}">
+                <div class="empty-emoji">😶</div>
+                <p>还没有题目，等老师发布后再来吧～</p>
+            </div>
+        </main>
 
-<!-- ===== 答题层：只有图片 + 输入 + 键盘 ===== -->
-<div class="sheet-mask" id="sheetMask" aria-hidden="true">
-    <div class="sheet" role="dialog" aria-modal="true">
-        <button type="button" class="sheet-close" id="sheetClose" aria-label="关闭">✕</button>
-        <div class="sheet-art">
-            <img id="sheetImg" alt=""/>
-        </div>
-        <div class="sheet-main">
-            <input type="text" class="expr-input" id="exprInput" readonly="readonly"
-                   inputmode="none" autocomplete="off" placeholder="在这里写算式"/>
+        <!-- ===== 答题层：只有图片 + 输入 + 键盘 ===== -->
+        <div class="sheet-mask" id="sheetMask" aria-hidden="true">
+            <div class="sheet" role="dialog" aria-modal="true">
+                <button type="button" class="sheet-close" id="sheetClose" aria-label="关闭">✕</button>
+                <div class="sheet-art">
+                    <img id="sheetImg" alt=""/>
+                </div>
+                <div class="sheet-main">
+                    <input type="text" class="expr-input" id="exprInput" readonly="readonly"
+                           inputmode="none" autocomplete="off" placeholder="在这里写算式"/>
 
-            <div class="keypad" id="keypad"></div>
+                    <div class="keypad" id="keypad"></div>
 
-            <div class="sheet-foot">
-                <button type="button" class="btn-ghost" id="btnCancel">再想想</button>
-                <button type="button" class="btn-submit" id="btnSubmit">✅ 确认提交</button>
+                    <div class="sheet-foot">
+                        <button type="button" class="btn-ghost" id="btnCancel">再想想</button>
+                        <button type="button" class="btn-submit" id="btnSubmit">✅ 确认提交</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- ===== 居中的结果提示框 ===== -->
-<div class="msg-mask" id="msgMask" aria-hidden="true">
-    <div class="msg-card" role="alertdialog" aria-modal="true">
-        <div class="msg-emoji" id="msgEmoji">🎉</div>
-        <div class="msg-text" id="msgText"></div>
-        <div class="msg-btns">
-            <button type="button" class="msg-alt" id="msgAlt" style="display:none;">刷新页面</button>
-            <button type="button" class="msg-ok" id="msgOk">好的</button>
+        <!-- ===== 居中的结果提示框 ===== -->
+        <div class="msg-mask" id="msgMask" aria-hidden="true">
+            <div class="msg-card" role="alertdialog" aria-modal="true">
+                <div class="msg-emoji" id="msgEmoji">🎉</div>
+                <div class="msg-text" id="msgText"></div>
+                <div class="msg-btns">
+                    <button type="button" class="msg-alt" id="msgAlt" style="display:none;">刷新页面</button>
+                    <button type="button" class="msg-ok" id="msgOk">好的</button>
+                </div>
+            </div>
+        </div>
+
         </div>
     </div>
 </div>
@@ -80,4 +90,3 @@
 <script th:src="@{/js/distributive-learn.js}"></script>
 </body>
 </html>
-

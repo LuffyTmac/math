@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="${moduleTitle + ' - 数学乐园'}">模块 - 数学乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="stylesheet" th:href="@{/css/student.css}"/>
+</head>
+<body>
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar(${activeKey})"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header(${moduleTitle})"></header>
+        <div class="content coming-content">
+        <div class="coming-card">
+            <div class="coming-emoji" th:text="${moduleEmoji}">✍️</div>
+            <h1 th:text="${moduleTitle}">自定义等式</h1>
+            <p class="coming-desc" th:text="${moduleDesc}">这个模块正在打磨中。</p>
+            <div class="coming-badge">🚧 正在建设中</div>
+            <div class="coming-actions">
+                <a class="coming-btn primary" th:href="@{/journey}">🧭 回到我的旅程</a>
+                <a class="coming-btn ghost" th:href="@{/distributive/learn}">✖️ 先去练分配律</a>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

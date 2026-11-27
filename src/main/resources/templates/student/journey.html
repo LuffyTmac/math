@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>我的旅程 - 数学乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="stylesheet" th:href="@{/css/student.css}"/>
+</head>
+<body>
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('journey')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('我的旅程')"></header>
+
+        <div class="content journey-content">
+
+            <!-- 顶部问候 + 进度 -->
+            <section class="journey-hero">
+                <div class="hero-emoji">🧭</div>
+                <div class="hero-text">
+                    <h1><span th:text="${me != null ? (me.nickname != null and !me.nickname.isEmpty() ? me.nickname : me.username) : '同学'}">同学</span> 的学习旅程</h1>
+                    <p>一共 4 站，一关一关往前走吧～</p>
+                </div>
+                <div class="hero-progress">
+                    <b th:text="${doneCount}">0</b><span>/4 已完成</span>
+                </div>
+            </section>
+
+            <!-- 全部完成勋章 -->
+            <section class="journey-medal" th:if="${allDone}">
+                <span class="medal-emoji">🏅</span>
+                <div class="medal-text">
+                    <b>全部完成！</b>
+                    <span>四站都走完啦，这枚勋章属于你～</span>
+                </div>
+            </section>
+
+            <!-- 流程时间线 -->
+            <section class="journey-timeline">
+
+                <!-- 第 1 站 -->
+                <article class="jstep" th:classappend="${stepDistributive} ? 'done' : ''">
+                    <div class="jdot">1</div>
+                    <div class="jcard">
+                        <div class="jcard-head">
+                            <span class="jemoji">✖️</span>
+                            <h2>分配律列算式</h2>
+                            <span class="jtag done" th:if="${stepDistributive}">已完成</span>
+                            <a class="jgo" th:unless="${stepDistributive}"
+                               th:href="@{/distributive/learn}">去练一练</a>
+                        </div>
+                        <p class="jdesc">看图列算式，把乘法分配律用起来。</p>
+                    </div>
+                </article>
+
+                <!-- 第 2 站 -->
+                <article class="jstep" th:classappend="${stepEquation} ? 'done' : ''">
+                    <div class="jdot">2</div>
+                    <div class="jcard">
+                        <div class="jcard-head">
+                            <span class="jemoji">✍️</span>
+                            <h2>自定义等式</h2>
+                            <span class="jtag done" th:if="${stepEquation}">已完成</span>
+                            <a class="jgo" th:unless="${stepEquation}"
+                               th:href="@{/learn/equation}">去练一练</a>
+                        </div>
+                        <p class="jdesc">自己编一道等式，说说它为什么成立。</p>
+                    </div>
+                </article>
+
+                <!-- 第 3 站 -->
+                <article class="jstep" th:classappend="${stepShelf} ? 'done' : ''">
+                    <div class="jdot">3</div>
+                    <div class="jcard">
+                        <div class="jcard-head">
+                            <span class="jemoji">📚</span>
+                            <h2>自定义书架</h2>
+                            <span class="jtag done" th:if="${stepShelf}">已完成</span>
+                            <a class="jgo" th:unless="${stepShelf}"
+                               th:href="@{/learn/bookshelf}">去练一练</a>
+                        </div>
+                        <p class="jdesc">把学过的知识整理成自己的小书架。</p>
+                    </div>
+                </article>
+
+                <!-- 第 4 站 -->
+                <article class="jstep" th:classappend="${stepVariation} ? 'done' : ''">
+                    <div class="jdot">4</div>
+                    <div class="jcard">
+                        <div class="jcard-head">
+                            <span class="jemoji">🔁</span>
+                            <h2>变式练习</h2>
+                            <span class="jtag done" th:if="${stepVariation}">已完成</span>
+                            <a class="jgo" th:unless="${stepVariation}"
+                               th:href="@{/variation/learn}">去练一练</a>
+                        </div>
+                        <p class="jdesc">换个数字、换个说法，再练一练。</p>
+                        <p class="jprogress" th:if="${!stepVariation and variationTotal > 0}">
+                            已提交 <b th:text="${variationDone}">0</b> / <b th:text="${variationTotal}">0</b> 题
+                        </p>
+                    </div>
+                </article>
+
+            </section>
+
+            <p class="journey-tip" th:unless="${allDone}">完成全部四站，就能点亮一枚勋章哦～</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,289 @@
+/* ============================================================
+   自定义等式页面（平板优先，尽量一屏放下）
+   ============================================================ */
+.eq-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 16px 22px 22px;
+}
+
+.eq-card {
+    background: #fff;
+    border-radius: 22px;
+    padding: 18px 22px 20px;
+    border: 2px solid #eef3fa;
+    box-shadow: 0 12px 30px rgba(91, 134, 229, .12);
+}
+
+.eq-hero {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.eq-emoji {
+    font-size: 34px;
+    line-height: 1;
+    animation: bob 3s ease-in-out infinite;
+}
+.eq-hero h1 {
+    margin: 0 0 2px;
+    font-size: 18px;
+    color: #1f2d3d;
+}
+.eq-hero p {
+    margin: 0;
+    font-size: 12.5px;
+    color: #7b8a9c;
+}
+.eq-hero b {
+    color: #e07b00;
+    font-family: Consolas, "Courier New", monospace;
+}
+
+.eq-input {
+    width: 100%;
+    box-sizing: border-box;
+    height: 56px;
+    padding: 0 16px;
+    border: 2px solid #cfe4ff;
+    border-radius: 14px;
+    background: #f7fbff;
+    color: #1f2d3d;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    outline: none;
+    caret-color: transparent;
+}
+.eq-input::placeholder {
+    color: #b7c6d8;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0;
+}
+
+/* 左 3 列数字（含 0），右 2 列符号 */
+.eq-keypad {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.eq-key {
+    height: 52px;
+    border: 1px solid #e2ebf6;
+    border-radius: 12px;
+    background: #fff;
+    color: #1f2d3d;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 0 #e6eef8;
+    transition: transform .08s ease, background .15s ease, box-shadow .15s ease;
+}
+.eq-key:hover { background: #f5faff; }
+.eq-key:active {
+    transform: translateY(2px);
+    box-shadow: none;
+}
+.eq-key.fn {
+    background: #f3f6fa;
+    color: #6b7a8d;
+    font-size: 17px;
+}
+.eq-key.op {
+    background: #fff6e8;
+    border-color: #ffe0b8;
+    color: #e07b00;
+}
+.eq-key.op:hover { background: #ffefd9; }
+
+/* 最后一排：0 占数字区 3 列，= 占符号区 2 列 */
+.eq-key.zero {
+    grid-column: span 3;
+    height: 46px;
+}
+.eq-key.eq {
+    grid-column: span 2;
+    height: 46px;
+}
+
+.eq-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+.eq-btn {
+    flex: 1;
+    height: 46px;
+    border: none;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform .14s ease, box-shadow .14s ease;
+}
+.eq-btn.ghost {
+    background: #f1f4f8;
+    color: #6b7a8d;
+}
+.eq-btn.primary {
+    flex: 1.6;
+    background: linear-gradient(135deg, #4A90E2, #6fb1f5);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(74, 144, 226, .32);
+}
+.eq-btn.primary:hover { transform: translateY(-1px); }
+.eq-btn.primary:disabled { opacity: .6; cursor: default; transform: none; }
+
+.eq-result {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 13.5px;
+    font-weight: 700;
+    line-height: 1.55;
+    animation: eqPop .28s cubic-bezier(.34, 1.4, .64, 1);
+}
+.eq-result.ok {
+    background: #eaf8ee;
+    color: #2e9e5b;
+    border: 1px solid #c8ecd4;
+}
+.eq-result.bad {
+    background: #fff4ec;
+    color: #c9662a;
+    border: 1px solid #ffdcc6;
+}
+@keyframes eqPop {
+    from { transform: scale(.96); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+}
+
+/* ---------- 历史记录：横向小胶囊，节省高度 ---------- */
+.eq-history {
+    margin-top: 14px;
+}
+.eq-history h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: #4a5a6d;
+}
+.eq-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: #eaf2ff;
+    color: #4A90E2;
+    font-size: 11.5px;
+}
+.eq-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+.eq-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 11px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid #eef3fa;
+    box-shadow: 0 2px 8px rgba(91, 134, 229, .06);
+    animation: eqPop .26s ease;
+}
+.eq-item.ok { border-color: #d4efdd; }
+.eq-item.bad { border-color: #ffe2cf; }
+.eq-mark {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #fff;
+    flex: 0 0 auto;
+}
+.eq-item.ok .eq-mark { background: #4caf6d; }
+.eq-item.bad .eq-mark { background: #ef8b52; }
+.eq-expr {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    color: #1f2d3d;
+    word-break: break-all;
+}
+.eq-empty {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #f7f9fc;
+    color: #9aa7b6;
+    font-size: 12.5px;
+}
+
+@media (max-width: 640px) {
+    .eq-content { padding: 10px 10px 24px; }
+    .eq-card { padding: 14px 12px 16px; }
+    .eq-input { font-size: 20px; height: 50px; }
+    .eq-key { height: 46px; font-size: 18px; }
+    .eq-key.zero, .eq-key.eq { height: 42px; }
+    .eq-btn { height: 44px; }
+}
+
+/* ---------- 自定义等式：左右结构 ---------- */
+.eq-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(290px, .85fr);
+    gap: 14px;
+    align-items: start;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 16px 18px 18px;
+}
+.eq-history-card {
+    margin-top: 0;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 120px);
+    padding: 14px 16px;
+    background: #fff;
+    border: 1px solid #e8eef7;
+    border-radius: 20px;
+    box-shadow: 0 10px 26px rgba(70, 100, 150, .10);
+}
+.eq-history-card h2 { margin: 0 0 10px; }
+.eq-list-wrap {
+    flex: 1;
+    overflow-y: auto;
+}
+.eq-history-card .eq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.eq-history-card .eq-item {
+    width: 100%;
+    box-sizing: border-box;
+}
+@media (max-width: 980px) {
+    .eq-content { grid-template-columns: 1fr; }
+    .eq-history-card { max-height: none; }
+}

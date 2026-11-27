@@ -1,0 +1,234 @@
+/* ============================================================
+   自定义书架 · 后台查看学生提交
+   ============================================================ */
+.shelf-admin { padding: 16px; }
+
+.shelf-admin-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+.shelf-admin-head h2 {
+    margin: 0;
+    font-size: 16px;
+    color: #1f2d3d;
+}
+.shelf-total {
+    display: inline-block;
+    min-width: 22px;
+    margin-left: 4px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: #fdf1e2;
+    color: #b4762f;
+    font-size: 12px;
+    text-align: center;
+}
+.shelf-tip { font-size: 12.5px; color: #9aa7b6; }
+
+.shelf-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.shelf-item {
+    background: #fff;
+    border: 1px solid #ecdfcd;
+    border-radius: 18px;
+    padding: 14px 16px 16px;
+    box-shadow: 0 8px 20px rgba(120, 85, 45, .08);
+    cursor: zoom-in;
+    transition: transform .16s ease, box-shadow .16s ease;
+}
+.shelf-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(120, 85, 45, .16);
+}
+
+.shelf-item-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+.shelf-student {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 14px;
+    color: #1f2d3d;
+}
+.shelf-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fdf1e2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+.shelf-time { font-size: 11.5px; color: #b6a18a; }
+
+.shelf-config {
+    font-size: 12px;
+    color: #9a8066;
+    margin-bottom: 10px;
+}
+.shelf-config b { color: #8a5a2b; }
+.shelf-config .dot { margin: 0 4px; color: #d0bfa9; }
+
+/* ---------- 迷你书架 ---------- */
+.ms-shelf {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #f7ecdd, #efdfc9);
+    box-shadow: inset 0 0 0 1px #e3d0b6;
+}
+.ms-side {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.ms-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 16px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #c9a87f, #a8845b);
+    box-shadow: 0 2px 0 #7d5f3e;
+}
+.ms-layer {
+    width: 12px;
+    flex: 0 0 auto;
+    font-size: 8px;
+    color: #fff8ec;
+    opacity: .9;
+    text-align: center;
+}
+.ms-books {
+    display: flex;
+    align-items: flex-end;
+    gap: 1px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+.ms-book {
+    flex: 1 1 4px;
+    max-width: 6px;
+    height: 13px;
+    border-radius: 1px;
+    background: linear-gradient(180deg, #c0503b, #8f2f22);
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
+}
+.ms-side.right .ms-book {
+    background: linear-gradient(180deg, #b56a45, #7d3f24);
+}
+.ms-more {
+    flex: 0 0 auto;
+    margin-left: 2px;
+    font-size: 8px;
+    color: #fff;
+    opacity: .9;
+}
+
+.shelf-empty {
+    padding: 40px 0;
+    text-align: center;
+    color: #9aa7b6;
+    font-size: 13px;
+}
+
+.shelf-pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 16px;
+}
+.shelf-page-btn {
+    height: 34px;
+    padding: 0 16px;
+    line-height: 34px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid #e6d9c6;
+    color: #8a5a2b;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+}
+.shelf-page-btn:hover { background: #fdf5ea; }
+.shelf-page-info { font-size: 13px; color: #8a7a66; }
+
+/* ---------- 放大查看 ---------- */
+.shelf-modal-mask {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(30, 22, 12, .45);
+    z-index: 300;
+}
+.shelf-modal-mask.open { display: flex; }
+
+.shelf-modal {
+    width: min(820px, 92vw);
+    max-height: 86vh;
+    display: flex;
+    flex-direction: column;
+    background: #fffdf8;
+    border-radius: 22px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, .35);
+    overflow: hidden;
+    animation: shelfPop .24s cubic-bezier(.34, 1.4, .64, 1);
+}
+@keyframes shelfPop {
+    from { transform: scale(.94); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+}
+.shelf-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0e5d5;
+}
+.shelf-modal-title b { font-size: 16px; color: #1f2d3d; margin-right: 10px; }
+.shelf-modal-title span { font-size: 12.5px; color: #9a8066; }
+.shelf-modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: #f3ece2;
+    color: #8a7a66;
+    font-size: 14px;
+    cursor: pointer;
+}
+.shelf-modal-body {
+    padding: 18px;
+    overflow-y: auto;
+}
+
+/* 放大版书架 */
+.shelf-modal .ms-shelf { padding: 18px; gap: 16px; border-radius: 16px; }
+.shelf-modal .ms-row { min-height: 30px; padding: 4px 8px; gap: 8px; }
+.shelf-modal .ms-layer { width: 18px; font-size: 11px; }
+.shelf-modal .ms-book { max-width: 11px; height: 26px; border-radius: 2px; }
+.shelf-modal .ms-more { font-size: 11px; }
+
+@media (max-width: 900px) {
+    .shelf-grid { grid-template-columns: 1fr; }
+}

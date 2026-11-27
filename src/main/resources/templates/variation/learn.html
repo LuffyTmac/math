@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>变式练习 - 数学乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="stylesheet" th:href="@{/css/variation.css}"/>
+</head>
+<body th:attr="data-ctx=@{/}">
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('variation')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('变式练习')"></header>
+
+        <div class="content var-learn">
+            <div class="var-columns">
+
+                <!-- 左：填空（蓝色模块） -->
+                <section class="var-module fill">
+                    <header class="var-module-head">
+                        <span class="var-module-emoji">✏️</span>
+                        <h2>填空题</h2>
+                        <span class="var-module-tip">把方框里的数字或符号填上</span>
+                    </header>
+
+                    <div class="var-module-body">
+                        <article class="var-card" th:each="q,st : ${fillQuestions}"
+                                 th:attr="data-qid=${q.id},data-type=FILL,data-submitted=${submittedIds != null and submittedIds.contains(q.id)}">
+                            <span class="var-index" th:text="${st.count}">1</span>
+                            <div class="fill-line" th:attr="data-content=${q.content}"></div>
+                            <div class="var-card-foot">
+                                <button type="button" class="var-btn primary var-submit fill-submit" th:text="${submittedIds != null and submittedIds.contains(q.id)} ? '已提交答案' : '提交答案'">提交答案</button>
+                                <span class="var-mine" th:if="${myAnswers != null and myAnswers.containsKey(q.id)}"
+                                      th:text="'你提交的答案：' + ${myAnswers.get(q.id)}">你提交的答案：</span>
+                            </div>
+                        </article>
+
+                        <p class="var-empty" th:if="${fillQuestions == null or fillQuestions.isEmpty()}">
+                            还没有填空题，等老师出题后再来吧～
+                        </p>
+                    </div>
+                </section>
+
+                <!-- 右：判断（橙色模块） -->
+                <section class="var-module judge">
+                    <header class="var-module-head">
+                        <span class="var-module-emoji">✅</span>
+                        <h2>判断题</h2>
+                        <span class="var-module-tip">判断这个算式是对还是错</span>
+                    </header>
+
+                    <div class="var-module-body">
+                        <article class="var-card" th:each="q,st : ${judgeQuestions}"
+                                 th:attr="data-qid=${q.id},data-type=JUDGE,data-submitted=${submittedIds != null and submittedIds.contains(q.id)}">
+                            <span class="var-index" th:text="${st.count}">1</span>
+                            <div class="judge-line" th:text="${q.content}">3×(4+5)=3×4+3×5</div>
+                            <div class="judge-row">
+                                <div class="judge-choices">
+                                    <button type="button" class="judge-btn" data-answer="TRUE">✅ 正确</button>
+                                    <button type="button" class="judge-btn" data-answer="FALSE">❌ 错误</button>
+                                </div>
+                                <button type="button" class="var-btn primary var-submit judge-submit" th:text="${submittedIds != null and submittedIds.contains(q.id)} ? '已提交答案' : '提交答案'">提交答案</button>
+                                <span class="var-mine" th:if="${myAnswers != null and myAnswers.containsKey(q.id)}"
+                                      th:text="'你提交的答案：' + ${myAnswers.get(q.id)}">你提交的答案：</span>
+                            </div>
+                        </article>
+
+                        <p class="var-empty" th:if="${judgeQuestions == null or judgeQuestions.isEmpty()}">
+                            还没有判断题，等老师出题后再来吧～
+                        </p>
+                    </div>
+                </section>
+
+                <!-- 下：选择（绿色模块） -->
+                <section class="var-module choice">
+                    <header class="var-module-head">
+                        <span class="var-module-emoji">🔤</span>
+                        <h2>选择题</h2>
+                        <span class="var-module-tip">选出方框里应该填的答案</span>
+                    </header>
+
+                    <div class="var-module-body choice-body">
+                        <article class="var-card" th:each="q,st : ${choiceQuestions}"
+                                 th:attr="data-qid=${q.id},data-type=CHOICE,data-submitted=${submittedIds != null and submittedIds.contains(q.id)}">
+                            <span class="var-index" th:text="${st.count}">1</span>
+                            <div class="choice-line" th:attr="data-content=${q.content}"></div>
+
+                            <div class="choice-options">
+                                <button type="button" class="choice-btn"
+                                        th:each="opt,oi : ${choiceOptions.get(q.id)}"
+                                        th:attr="data-index=${oi.index}">
+                                    <span class="opt-letter"
+                                          th:text="${#strings.substring('ABCDEF', oi.index, oi.index + 1)}">A</span>
+                                    <span class="opt-text" th:text="${opt}">4</span>
+                                </button>
+                            </div>
+
+                            <div class="var-card-foot">
+                                <button type="button" class="var-btn primary var-submit choice-submit"
+                                        th:text="${submittedIds != null and submittedIds.contains(q.id)} ? '已提交答案' : '提交答案'">提交答案</button>
+                                <span class="var-mine" th:if="${myAnswers != null and myAnswers.containsKey(q.id)}"
+                                      th:text="'你的答案：' + ${myAnswers.get(q.id)}">你的答案：</span>
+                            </div>
+                        </article>
+
+                        <p class="var-empty" th:if="${choiceQuestions == null or choiceQuestions.isEmpty()}">
+                            还没有选择题，等老师出题后再来吧～
+                        </p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 提交结果提示（居中） -->
+<div class="var-mask" id="varMask" aria-hidden="true">
+    <div class="var-modal" role="dialog" aria-modal="true">
+        <div class="var-modal-emoji" id="varModalEmoji">🎉</div>
+        <div class="var-modal-text" id="varModalText">提交成功！</div>
+        <button type="button" class="var-modal-btn" id="varModalOk">好的</button>
+    </div>
+</div>
+
+<!-- 答题键盘（点击空格后从底部弹出） -->
+<div class="var-keypad-mask" id="kpMask" aria-hidden="true">
+    <div class="var-keypad-sheet" role="dialog" aria-modal="true">
+        <div class="kp-head">
+            <span>填写答案</span>
+            <button type="button" class="kp-close" id="kpClose">完成</button>
+        </div>
+        <div class="kp-display" id="kpDisplay">—</div>
+        <div class="kp-grid" id="kpGrid">
+            <button type="button" data-key="1">1</button>
+            <button type="button" data-key="2">2</button>
+            <button type="button" data-key="3">3</button>
+            <button type="button" class="fn" data-key="back">⌫</button>
+
+            <button type="button" data-key="4">4</button>
+            <button type="button" data-key="5">5</button>
+            <button type="button" data-key="6">6</button>
+            <button type="button" class="fn" data-key="clear">清空</button>
+
+            <button type="button" data-key="7">7</button>
+            <button type="button" data-key="8">8</button>
+            <button type="button" data-key="9">9</button>
+            <button type="button" class="op" data-key="×">×</button>
+
+            <button type="button" data-key="(">(</button>
+            <button type="button" data-key=")">)</button>
+            <button type="button" class="op" data-key="+">+</button>
+            <button type="button" class="op" data-key="−">−</button>
+
+            <button type="button" class="zero" data-key="0">0</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/variation-learn.js}"></script>
+</body>
+</html>

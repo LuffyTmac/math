@@ -423,3 +423,21 @@ body.pad-shell.sheet-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
     .float-symbol { animation: none !important; }
 }
+
+/* ============================================================
+   嵌入后台布局（顶部栏 + 侧边栏）时的尺寸适配
+   ============================================================ */
+body.pad-shell.learn-embed {
+    min-height: 0;
+    height: auto;
+    overflow: visible;
+}
+.learn-embed .main { min-height: calc(100vh - 60px); }
+.learn-embed .content.learn-content {
+    padding: 0;
+    height: calc(100vh - 60px);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+.learn-embed .pad-main { height: 100%; }
+.learn-embed .deco-layer { display: none; }

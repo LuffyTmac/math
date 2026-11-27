@@ -174,10 +174,23 @@
                 <span class="input-icon">🔑</span>
                 <input type="password" name="password" placeholder="秘密密码" required="required"/>
             </div>
-            <button type="submit" class="btn">🚀 开始探险</button>
+            <button type="submit" class="btn" id="loginBtn">🚀 开始探险</button>
         </form>
 
         <div class="footer-tip">小学数学 · 快乐学习</div>
+
+    <script>
+        (function () {
+            var form = document.querySelector('form');
+            var btn = document.getElementById('loginBtn');
+            if (!form || !btn) return;
+            form.addEventListener('submit', function () {
+                if (btn.disabled) return;
+                btn.disabled = true;
+                btn.textContent = '⏳ 登录中…';
+            });
+        })();
+    </script>
     </div>
 
 </body>

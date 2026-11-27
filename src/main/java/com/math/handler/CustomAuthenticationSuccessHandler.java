@@ -12,18 +12,18 @@ import java.util.Collection;
 
 /**
  * 登录成功跳转处理器（三种角色）
- * - ADMIN（管理员）   → /distributive/admin/list（分配律管理看板）
- * - TEACHER（教师）   → /distributive/admin/list（分配律管理看板）
- * - STUDENT（学生）   → /distributive/learn（分配律答题页）
+ * - ADMIN（管理员）   → /index（后台首页）
+ * - TEACHER（教师）   → /index（后台首页）
+ * - STUDENT（学生）   → /journey（我的旅程）
  */
 @Component
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
-    /** 管理员 / 教师登录后进入分配律管理看板 */
-    private static final String ADMIN_HOME = "/distributive/admin/list";
+    /** 管理员 / 教师登录后进入后台首页 */
+    private static final String ADMIN_HOME = "/index";
 
-    /** 学生登录后进入分配律答题页 */
-    private static final String STUDENT_HOME = "/distributive/learn";
+    /** 学生登录后进入「我的旅程」 */
+    private static final String STUDENT_HOME = "/journey";
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -41,7 +41,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                 return ADMIN_HOME;
             }
         }
-        // 学生（以及其它未匹配角色）→ 分配律答题页
+        // 学生（以及其它未匹配角色）→ 我的旅程
         return STUDENT_HOME;
     }
 }

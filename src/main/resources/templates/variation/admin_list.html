@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>变式练习管理 - 数学乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="stylesheet" th:href="@{/css/variation.css}"/>
+</head>
+<body th:attr="data-ctx=@{/}">
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('variation-admin')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('变式练习管理')"></header>
+
+        <div class="content">
+            <div class="card">
+                <div class="var-toolbar">
+                    <h2>题目列表 <span class="var-total" th:text="${total}">0</span></h2>
+                    <a class="var-btn primary" th:href="@{/variation/admin/add}">＋ 新增题目</a>
+                </div>
+
+                <table class="table var-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>类型</th>
+                        <th>题干</th>
+                        <th>作答人数</th>
+                        <th>准确率</th>
+                        <th>排序</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="r : ${rows}" th:attr="data-id=${r.id}">
+                        <td th:text="${r.id}">1</td>
+                        <td>
+                            <span class="var-tag" th:classappend="${r.type == 'FILL' ? 'fill' : (r.type == 'JUDGE' ? 'judge' : 'choice')}"
+                                  th:text="${r.typeText}">填空</span>
+                        </td>
+                        <td class="var-content">
+                            <a class="var-stem-link" th:href="@{/variation/admin/detail(id=${r.id})}">
+                                <span class="var-stem" th:attr="data-stem=${r.content}"></span>
+                            </a>
+                        </td>
+
+                        <td class="var-count" th:text="${r.answerCount}">0</td>
+                        <td class="var-rate" th:text="${r.accuracy} + '%'">0.00%</td>
+                        <td th:text="${r.sortOrder}">0</td>
+                        <td>
+                            <a class="var-link" th:href="@{/variation/admin/edit(id=${r.id})}">编辑</a>
+                            <button type="button" class="var-link danger js-del" th:attr="data-id=${r.id}">删除</button>
+                        </td>
+                    </tr>
+                    <tr th:if="${rows == null or rows.isEmpty()}">
+                        <td colspan="7" class="var-empty">还没有题目，点右上角「新增题目」开始出题吧～</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div class="var-pager" th:if="${pages > 1}">
+                    <a th:if="${hasPrev}" th:href="@{/variation/admin/list(page=${page - 1})}" class="var-btn ghost">上一页</a>
+                    <span class="var-page-info">第 <b th:text="${page}">1</b> / <b th:text="${pages}">1</b> 页</span>
+                    <a th:if="${hasNext}" th:href="@{/variation/admin/list(page=${page + 1})}" class="var-btn ghost">下一页</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/variation-admin.js}"></script>
+<script th:src="@{/js/variation-stem.js}"></script>
+</body>
+</html>

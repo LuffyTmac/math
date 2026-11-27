@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title th:text="${question != null ? '编辑变式练习 - 数学乐园' : '新增变式练习 - 数学乐园'}">新增变式练习</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="stylesheet" th:href="@{/css/variation.css}"/>
+</head>
+<body th:attr="data-ctx=@{/}">
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('variation-admin')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('变式练习管理')"></header>
+
+        <div class="content">
+            <div id="editData"
+                 th:attr="data-id=${question != null ? question.id : ''},
+                          data-type=${question != null ? question.type : ''},
+                          data-content=${question != null ? question.content : ''},
+                          data-answers=${answersJson},
+                          data-judge=${question != null and question.type == 'JUDGE' ? question.answer : ''},
+                          data-options=${optionsJson},
+                          data-correct=${correctOption},
+                          data-sort=${question != null ? question.sortOrder : 0}"></div>
+
+            <div class="card var-edit">
+                <h2 th:text="${question != null ? '编辑题目' : '新增题目'}">新增题目</h2>
+
+                <div class="var-field">
+                    <label class="var-label">题目类型 <span class="required">*</span></label>
+                    <div class="type-tabs">
+                        <button type="button" class="type-tab" data-type="FILL">✏️ 填空</button>
+                        <button type="button" class="type-tab" data-type="JUDGE">✅ 判断对错</button>
+                        <button type="button" class="type-tab" data-type="CHOICE">🔤 选择题</button>
+                    </div>
+                    <p class="var-hint">先确认类型，再设计题目</p>
+                </div>
+
+                <div id="builder" hidden>
+                    <div class="var-field">
+                        <label class="var-label">题干</label>
+                        <div id="qContent" class="var-content-preview" aria-label="题干"></div>
+                        <div class="var-keypad" id="keypad">
+                            <div class="kp-block">
+                                <span class="kp-title">数字</span>
+                                <div class="kp-pad kp-digits">
+                                    <button type="button" class="vk" data-key="1">1</button>
+                                    <button type="button" class="vk" data-key="2">2</button>
+                                    <button type="button" class="vk" data-key="3">3</button>
+                                    <button type="button" class="vk" data-key="4">4</button>
+                                    <button type="button" class="vk" data-key="5">5</button>
+                                    <button type="button" class="vk" data-key="6">6</button>
+                                    <button type="button" class="vk" data-key="7">7</button>
+                                    <button type="button" class="vk" data-key="8">8</button>
+                                    <button type="button" class="vk" data-key="9">9</button>
+                                    <button type="button" class="vk zero" data-key="0">0</button>
+                                </div>
+                            </div>
+                            <div class="kp-block">
+                                <span class="kp-title">符号 / 空格</span>
+                                <div class="kp-pad kp-ops">
+                                    <button type="button" class="vk op" data-key="+">+</button>
+                                    <button type="button" class="vk op" data-key="−">−</button>
+                                    <button type="button" class="vk op" data-key="×">×</button>
+                                    <button type="button" class="vk" data-key="(">(</button>
+                                    <button type="button" class="vk" data-key=")">)</button>
+                                    <button type="button" class="vk op" data-key="=">=</button>
+                                    <button type="button" class="vk blank-key" data-key="□">□</button>
+                                    <button type="button" class="vk fn" data-key="back">⌫</button>
+                                    <button type="button" class="vk fn" data-key="clear">清空</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="fillPanel" class="var-field">
+                        <label class="var-label">每空的正确答案</label>
+                        <div id="answers" class="answer-list"></div>
+                        <p class="var-hint">有几个 □ 就会出现几个答案输入框</p>
+                    </div>
+
+                    <div id="judgePanel" class="var-field" hidden>
+                        <label class="var-label">这道题是</label>
+                        <div class="judge-pick">
+                            <label class="judge-option"><input type="radio" name="judge" value="TRUE"/> ✅ 正确</label>
+                            <label class="judge-option"><input type="radio" name="judge" value="FALSE"/> ❌ 错误</label>
+                        </div>
+                    </div>
+
+                    <div id="choicePanel" class="var-field" hidden>
+                        <label class="var-label">每空的正确答案</label>
+                        <div class="choice-answer-row">
+                            <div id="choiceAnswers" class="answer-list"></div>
+                            <button type="button" class="var-btn ghost" id="btnGenOptions">🎲 自动生成 4 个选项</button>
+                        </div>
+
+                        <label class="var-label" style="margin-top:12px;">选项（选中一个正确项）</label>
+                        <div id="choiceOptions" class="choice-options"></div>
+                        <p class="var-hint">每个选项按顺序填满所有空，多空用「、」分隔；自动生成 1 个正确项 + 3 个干扰项</p>
+                    </div>
+
+                    <div class="var-field">
+                        <label class="var-label">排序（数字越小越靠前）</label>
+                        <input type="number" id="sortOrder" class="var-input small" value="0"/>
+                    </div>
+
+                    <div class="var-actions">
+                        <a class="var-btn ghost" th:href="@{/variation/admin/list}">取消</a>
+                        <button type="button" class="var-btn primary" id="btnSave">保存题目</button>
+                    </div>
+                    <p id="saveMsg" class="var-msg" hidden></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 保存结果提示（居中） -->
+<div class="var-mask" id="varMask" aria-hidden="true">
+    <div class="var-modal" role="dialog" aria-modal="true">
+        <div class="var-modal-emoji" id="varModalEmoji">✅</div>
+        <div class="var-modal-text" id="varModalText">已保存</div>
+        <button type="button" class="var-modal-btn" id="varModalOk">好的</button>
+    </div>
+</div>
+
+<script th:src="@{/js/variation-admin.js}"></script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>自定义等式 - 数学乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="stylesheet" th:href="@{/css/student.css}"/>
+    <link rel="stylesheet" th:href="@{/css/equation.css}"/>
+</head>
+<body th:attr="data-ctx=@{/}">
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('equation')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('自定义等式')"></header>
+
+        <div class="content eq-content">
+
+            <section class="eq-card">
+                <div class="eq-hero">
+                    <span class="eq-emoji">✍️</span>
+                    <div>
+                        <h1>写一个分配律等式</h1>
+                        <p>照着 <b>A×(B+C)=A×B+A×C</b> 的样子写，写完点「提交等式」～</p>
+                    </div>
+                </div>
+
+                <input type="text" id="eqInput" class="eq-input" readonly
+                       placeholder="点下面的按钮，写出你的等式" autocomplete="off"/>
+
+                <div class="eq-keypad" id="eqKeypad">
+                    <!-- 数字区（左 3 列，0 和 1-9 放在一起） -->
+                    <button type="button" class="eq-key" data-key="1">1</button>
+                    <button type="button" class="eq-key" data-key="2">2</button>
+                    <button type="button" class="eq-key" data-key="3">3</button>
+                    <!-- 符号区（右 2 列）：左右括号同一行 -->
+                    <button type="button" class="eq-key" data-key="(">(</button>
+                    <button type="button" class="eq-key" data-key=")">)</button>
+
+                    <button type="button" class="eq-key" data-key="4">4</button>
+                    <button type="button" class="eq-key" data-key="5">5</button>
+                    <button type="button" class="eq-key" data-key="6">6</button>
+                    <button type="button" class="eq-key fn" data-key="back">⌫</button>
+                    <button type="button" class="eq-key op" data-key="×">×</button>
+
+                    <button type="button" class="eq-key" data-key="7">7</button>
+                    <button type="button" class="eq-key" data-key="8">8</button>
+                    <button type="button" class="eq-key" data-key="9">9</button>
+                    <button type="button" class="eq-key op" data-key="+">+</button>
+                    <button type="button" class="eq-key op" data-key="−">−</button>
+
+                    <button type="button" class="eq-key zero" data-key="0">0</button>
+                    <button type="button" class="eq-key op eq" data-key="=">=</button>
+                </div>
+
+                <div class="eq-actions">
+                    <button type="button" class="eq-btn ghost" id="btnEqClear">🧽 清空</button>
+                    <button type="button" class="eq-btn primary" id="btnEqSubmit">✅ 提交等式</button>
+                </div>
+
+                <div class="eq-result" id="eqResult" hidden></div>
+            </section>
+
+            <section class="eq-history eq-history-card">
+                <h2>我交过的等式 <span class="eq-count" id="eqCount"
+                        th:text="${recent != null ? recent.size() : 0}">0</span></h2>
+                <div class="eq-list-wrap">
+                    <ul class="eq-list" id="eqList">
+                        <li class="eq-item" th:each="a : ${recent}"
+                            th:classappend="${a.correct == 1} ? 'ok' : 'bad'">
+                            <span class="eq-mark" th:text="${a.correct == 1} ? '✓' : '✗'">✓</span>
+                            <span class="eq-expr" th:text="${a.expression}">3×(4+5)=3×4+3×5</span>
+                        </li>
+                    </ul>
+                    <p class="eq-empty" id="eqEmpty" th:if="${recent == null or recent.isEmpty()}">
+                        还没有交过等式，写一个试试吧～
+                    </p>
+                </div>
+            </section>
+
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/equation.js}"></script>
+</body>
+</html>

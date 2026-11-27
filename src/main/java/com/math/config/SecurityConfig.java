@@ -55,10 +55,18 @@ public class SecurityConfig {
             .authorizeRequests()
                 // 公开访问
                 .antMatchers("/hello", "/login", "/error", "/bounty/hall", "/css/**", "/js/**", "/images/**", "/uploads/**", "/webjars/**").permitAll()
-                // 乘法分配律学习页与算式提交：学生/游客均可访问
-                .antMatchers("/distributive/learn", "/distributive/submit").permitAll()
+                // 乘法分配律学习页与算式提交：必须登录（学生登录后进入）
+                .antMatchers("/distributive/learn", "/distributive/submit").authenticated()
+                // 变式练习：学生页/提交需登录；后台仅 ADMIN + TEACHER
+                .antMatchers("/variation/learn", "/variation/submit").authenticated()
+                .antMatchers("/variation/admin/**").hasAnyRole("ADMIN", "TEACHER")
+                // 自定义等式看板：ADMIN + TEACHER
+                .antMatchers("/equation/admin/**").hasAnyRole("ADMIN", "TEACHER")
+                // 自定义书架查看：ADMIN + TEACHER
+                .antMatchers("/shelf/admin/**").hasAnyRole("ADMIN", "TEACHER")
                 // 后台首页与用户管理：仅 ADMIN 角色（管理员唯一，默认只有一个）
-                .antMatchers("/index", "/user/**").hasRole("ADMIN")
+                .antMatchers("/index").hasAnyRole("ADMIN", "TEACHER")
+                .antMatchers("/user/**").hasRole("ADMIN")
                 // 悬赏管理（出题/评分/题目管理）：ADMIN + TEACHER
                 .antMatchers("/bounty/admin/**").hasAnyRole("ADMIN", "TEACHER")
                 // 乘法分配律管理（出题/编辑/删除）：ADMIN + TEACHER
@@ -84,10 +92,10 @@ public class SecurityConfig {
                 .deleteCookies("JSESSIONID")
                 .permitAll()
             .and()
-            // CSRF：/hello 与 /distributive/submit 都是匿名公开接口。
+            // CSRF：/hello 是公开展示页；/distributive/submit 虽需登录，但学生页可能长时间停留，
             // 学生页可能长时间停留在 Pad 上，session 过期/服务重启后页面里的旧 token 会失效，
             // 继续校验只会让小朋友看到 403（该接口无登录态、无敏感操作，放行不影响安全）。
-            .csrf().ignoringAntMatchers("/hello", "/distributive/submit");
+            .csrf().ignoringAntMatchers("/hello", "/distributive/submit", "/learn/equation/submit", "/learn/bookshelf/submit", "/variation/submit");
 
         return http.build();
     }

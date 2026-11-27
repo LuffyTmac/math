@@ -159,7 +159,7 @@ body.sidebar-collapsed .sidebar-toggle .ic-unfold { display: inline-block; }
 .sidebar-toggle .ic-fold { display: inline-block; }
 .breadcrumb { font-size: 15px; color: #333; font-weight: 500; }
 .user-area { display: flex; align-items: center; gap: 16px; color: #666; }
-.user-area .who { font-size: 14px; }
+.user-area .who { font-size: 14px; font-weight: 700; }
 .logout-form { display: inline; }
 .logout-btn {
     background: #fff;
@@ -811,4 +811,11 @@ body.sidebar-collapsed .sidebar-toggle .ic-unfold { display: inline-block; }
 .others-answer-item .oai-stars {
     color: #faad14;
     font-size: 14px;
+}
+
+/* 一级独立入口（我的旅程） */
+.menu-standalone {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, .10);
 }

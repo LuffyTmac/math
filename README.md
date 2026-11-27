@@ -27,15 +27,19 @@
 ### 问题悬赏模块
 - **admin**：发布题目（富文本编辑器，计算题/应用题/口算题）、设置悬赏星星（1-5⭐）、保存草稿/发布、查看答题情况、评分（0-5⭐）
 - **user**：浏览悬赏大厅（公开）、答题（富文本输入解题思路）、查看"我的答题"与评分结果
-- **登录跳转**：ADMIN / TEACHER → `/distributive/admin/list`，STUDENT → `/distributive/learn`
+- **登录跳转**：ADMIN / TEACHER → `/index`（后台首页），STUDENT → `/journey`（我的旅程）
 
 ### 乘法分配律模块
 - **admin / teacher**：题目只维护图片（可选详细说明），保存草稿 / 发布 / 下架 / 删除（统一在「题目管理」页操作）；分配律看板为沉浸式全屏（隐藏顶部栏、深色铺满）；
   列表页是「一行四卡 + 科幻云海 + 甬道」（按 `sort_order` 取前 4 条）——默认甬道收起、卡片贴底，算式以霓虹气泡占满上方；
-  点「开始归类」后卡片顶到顶部、甬道铺满下方（甬道内按 A×(B+C) / A×B＋A×C 分两栏），算式一个一个飞入对应栏；工具栏还有「🧹 擦除所有算式」可一键清空学生提交；固定 15s 自动刷新 + 手动「刷新」按钮（整页重载回到未归类状态），可删除单条算式。
-- **学生 / 游客**：Pad 版学习页（按 `sort_order` 默认展示前 4 道题，满屏 2×2 大图卡片 + 漂浮数学符号，无任何标题/导航/题号文字），点卡片弹出答题层，
-  用符号键盘输入算式（答题层也只保留图片和键盘）；只接受两种分配律写法：`a*(b+c)` 与 `a*b+a*c`（含减号）。成功/错误提示都弹在屏幕正中。
-- 学生提交不记录身份，提交即出现在教师端云海。
+  点「开始归类」后卡片顶到顶部、甬道铺满下方（甬道内按 A×(B+C) / A×B＋A×C 分两栏），算式一个一个飞入对应栏（甬道内的 `A×(B+C)` / `A×B＋A×C` 标题暂时隐藏）；工具栏还有「🧹 擦除所有算式」可一键清空学生提交；固定 15s 自动刷新 + 手动「刷新」按钮（整页重载回到未归类状态），可删除单条算式。
+- **学生（需登录）**：进入学习页后恢复左侧导航栏 + 顶部导航栏，导航栏含「分配律列算式 / 自定义等式 / 自定义书架 / 变式练习 / 面积割补 / 我的旅程」（学生暂时不显示「学习天地」分组）；
+  主区域仍是 Pad 版 2×2 大图卡片（按 `sort_order` 取前 4 条），点卡片弹出答题层，用符号键盘输入算式；只接受两种分配律写法：`a*(b+c)` 与 `a*b+a*c`（含减号）。
+- **自定义等式**：学生用符号键盘写一个 `A×(B+C)=A×B+A×C` 形式的等式提交；提交前 JS 去掉多余空格，后端再规范化并校验；正确/错误都会入库（`is_correct` 标记），可以反复提交，页面下方显示最近提交记录。
+- **自定义书架**：学生调整左右书架的层数与每层书本数（1-10 层、每层 1-100 本），点提交把两组配置存库；页面会回显最近一次配置，同一学生可多次提交。
+- **变式练习**：支持填空 / 判断 / 选择三种题型；学生页左侧蓝色填空、右侧橙色判断、下方绿色选择，各展示 3 道（按 sort 排序）；选择题为 4 个选项，出题时可自动生成 1 正确 + 3 干扰项；提交后不显示对错（后台仍记录 `is_correct`）。
+- **我的旅程**：学生登录后的默认页，用流程时间线展示 6 个关卡；已上线的「分配律列算式」会显示该学生提交过的算式，其余关卡暂时是静态占位。
+- 学生提交时会记录 `student_id` / `student_name`（昵称优先），提交即出现在教师端云海。
 
 ## 目录结构
 
@@ -163,17 +167,71 @@ math/
 |------|------|
 | id | 主键 |
 | question_id | 所属题目 |
-| expression | 规范化后的算式，如 `3*(4+5)` / `3*4+3*5` |
+| expression | 规范化后的算式，乘号用真实的 `×`，如 `3×(4+5)` / `3×4+3×5` |
+| student_id | 提交学生 id（`sys_user.id`，可为空兼容历史数据） |
+| student_name | 提交学生姓名（昵称优先） |
 | create_time | 提交时间（甬道内按此排序） |
 | deleted | 逻辑删除（教师可删乱填内容） |
+
+### shelf_answer（自定义书架提交表）
+| 字段 | 说明 |
+|------|------|
+| id | 主键 |
+| left_layers / left_books | 左书架层数 / 每层书本数 |
+| right_layers / right_books | 右书架层数 / 每层书本数 |
+| student_id / student_name | 提交学生 id / 姓名 |
+| create_time / update_time / deleted | 时间与逻辑删除 |
+
+### variation_question（变式练习题目表）
+| 字段 | 说明 |
+|------|------|
+| id | 主键 |
+| type | FILL 填空 / JUDGE 判断 |
+| content | 题干（填空用 `□` 表示空格） |
+| answer | 填空：JSON 数组；判断：TRUE/FALSE |
+| sort_order | 排序，数字越小越靠前 |
+| creator_id / create_time / update_time / deleted | 出题人与时间、逻辑删除 |
+
+### variation_answer（变式练习作答表）
+| 字段 | 说明 |
+|------|------|
+| id / question_id / student_id / student_name | 关联信息 |
+| answer | 学生答案（填空 JSON / 判断 TRUE/FALSE） |
+| is_correct | 是否正确：1/0 |
+| create_time / update_time / deleted | 时间与逻辑删除 |
+
+### equation_answer（自定义等式提交表）
+| 字段 | 说明 |
+|------|------|
+| id | 主键 |
+| expression | 学生提交的等式（乘号用 `×`，已去空格） |
+| is_correct | 是否正确：1 正确 0 错误（错误也保留） |
+| student_id / student_name | 提交学生 id / 姓名 |
+| create_time / update_time | 时间 |
+| deleted | 逻辑删除 |
 
 ## 访问地址
 
 | 路径 | 权限 | 说明 |
 |------|------|------|
 | `/bounty/hall` | 公开 | 悬赏大厅（卡片式，按时间/星星排序，分页） |
-| `/distributive/learn` | 公开 | 分配律学习页（Pad 版式，只展示已发布题目） |
-| `/distributive/submit` | 公开 | 提交算式（POST，JSON） |
+| `/distributive/learn` | 登录用户 | 分配律学习页（Pad 版式，只展示已发布题目） |
+| `/distributive/submit` | 登录用户 | 提交算式（POST，JSON，记录学生 id/姓名） |
+| `/journey` | 登录用户 | 我的旅程（学生默认首页，流程时间线） |
+| `/learn/equation` | 登录用户 | 自定义等式（写等式 + 符号键盘 + 最近提交） |
+| `/learn/equation/submit` | 登录用户 | 提交自定义等式（POST，JSON） |
+| `/learn/bookshelf` | 登录用户 | 自定义书架（左右书架配置） |
+| `/learn/bookshelf/submit` | 登录用户 | 保存书架配置（POST，JSON） |
+| `/variation/learn` | 登录用户 | 变式练习（左填空 / 右判断，各 3 道） |
+| `/variation/submit` | 登录用户 | 提交变式练习答案（POST，JSON） |
+| `/variation/admin/list` | ADMIN/TEACHER | 变式练习题目管理（分页） |
+| `/variation/admin/add` | ADMIN/TEACHER | 新增题目（填空/判断） |
+| `/variation/admin/edit` | ADMIN/TEACHER | 编辑题目 |
+| `/variation/admin/save` | ADMIN/TEACHER | 保存题目（POST，`@RequestBody`） |
+| `/variation/admin/delete` | ADMIN/TEACHER | 删除题目（POST，`@RequestBody`） |
+| `/equation/admin/board` | ADMIN/TEACHER | 自定义等式看板（漂浮 + 整理） |
+| `/shelf/admin/list` | ADMIN/TEACHER | 自定义书架提交（渲染书架，点击放大） |
+| `/learn/area` | 登录用户 | 面积割补（拖动长/宽/中线实时看面积） |
 | `/login` | 公开 | 登录页（卡通风格） |
 | `/hello` | 公开 | 测试页 |
 | `/bounty/answer` | 登录 | 答题（GET表单 / POST提交，同一题只能答一次） |
@@ -202,6 +260,8 @@ math/
 mysql -uroot -p math < db/schema.sql                  # 用户表 + admin 初始化
 mysql -uroot -p math < db/schema_bounty.sql           # 悬赏模块表
 mysql -uroot -p math < db/schema_distributive.sql     # 分配律模块表
+mysql -uroot -p math < db/schema_equation.sql         # 自定义等式表
+mysql -uroot -p math < db/schema_shelf.sql            # 自定义书架表
 ```
 
 确认 `application.yml` 中 `spring.datasource` 配置正确。
@@ -215,13 +275,14 @@ mvn spring-boot:run
 ### 3. 访问
 
 - http://localhost:8080/bounty/hall — 悬赏大厅（免登录）
-- http://localhost:8080/distributive/learn — 分配律学习页（免登录，Pad 打开效果最佳）
+- http://localhost:8080/distributive/learn — 分配律学习页（需登录，Pad 打开效果最佳）
+- http://localhost:8080/journey — 我的旅程（学生登录后的默认首页）
 - http://localhost:8080/login — 登录（admin/hxx123456 或自建用户）
-- admin / teacher 登录后跳转 `/distributive/admin/list`（分配律管理），student 登录后跳转 `/distributive/learn`（分配律答题页）
+- admin / teacher 登录后跳转 `/distributive/admin/list`（分配律管理），student 登录后跳转 `/journey`（我的旅程）
 
 ## 关键实现说明
 
-- **登录跳转**：`CustomAuthenticationSuccessHandler` 按角色跳转（ADMIN/TEACHER→`/distributive/admin/list`，STUDENT→`/distributive/learn`）。
+- **登录跳转**：`CustomAuthenticationSuccessHandler` 按角色跳转（ADMIN/TEACHER→`/distributive/admin/list`，STUDENT→`/journey`）。
 - **禁用校验**：`CustomUserDetailsService` 用 `User.builder().disabled(status==0)`，`CustomAuthenticationFailureHandler` 捕获 `DisabledException` 跳转 `/login?disabled`。
 - **富文本编辑器**：`static/js/rich-editor.js` 基于 `contenteditable + execCommand`，无外部依赖，存储为 HTML。
 - **XSS 防护**：`XssUtil.clean()` 清理 script 标签、on* 事件属性、javascript: 协议。
@@ -229,7 +290,7 @@ mvn spring-boot:run
 - **分页**：MyBatis-Plus `PaginationInnerInterceptor`，列表页支持每页条数切换。
 - **侧边栏**：`common.html` 用 `sec:authorize` 按角色显示菜单（STUDENT 看大厅/我的答题，ADMIN/TEACHER 额外看管理后台）。
 - **学生提交兜底**：页面停留超过 20 分钟再提交会先提示「刷新一下更稳妥」（可刷新或直接提交）；网络异常时提示可「刷新页面 / 再试一次」。
-- **学生提交免 CSRF**：`/distributive/submit` 是匿名公开接口，已在 `SecurityConfig` 中放行 CSRF（Pad 页面长时间停留导致 token 过期时会 403）；管理端接口仍校验 CSRF。
+- **学生提交免 CSRF**：`/distributive/submit` 需登录但放行 CSRF（Pad 页面长时间停留导致 token 过期时会 403）；管理端接口仍校验 CSRF。
 - **分配律算式校验**：`ExpressionValidator` 先做 NFKC 规范化（全角转半角、`×`→`*`、去空白），
   只放行 `a*(b+c)` 与 `a*b+a*c` 两种结构；展开式要求两个乘法有相同因数；错误提示按场景返回儿童化文案。
   前端 `distributive-learn.js` 用同一套规则即时提示，服务端兜底。

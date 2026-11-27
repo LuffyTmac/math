@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>题目详情 - 数学乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="stylesheet" th:href="@{/css/variation.css}"/>
+</head>
+<body th:attr="data-ctx=@{/}">
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('variation-admin')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('变式练习 · 题目详情')"></header>
+
+        <div class="content var-detail">
+
+            <!-- 题目 -->
+            <section class="var-detail-hero">
+                <div class="var-detail-head">
+                    <span class="var-tag"
+                          th:classappend="${question.type == 'FILL' ? 'fill' : (question.type == 'JUDGE' ? 'judge' : 'choice')}"
+                          th:text="${question.type == 'FILL' ? '填空' : (question.type == 'JUDGE' ? '判断' : '选择')}">填空</span>
+                    <a class="var-back" th:href="@{/variation/admin/list}">← 返回列表</a>
+                </div>
+                <div class="var-stem-box">
+                    <span class="var-stem" th:attr="data-stem=${question.content}"></span>
+                </div>
+
+                <!-- 选择题：选项逐行展示 -->
+                <div class="var-choice-list" th:if="${question.type == 'CHOICE'}">
+                    <div class="var-choice-item" th:each="opt,oi : ${choiceOptions}">
+                        <span class="var-choice-letter"
+                              th:text="${#strings.substring('ABCDEF', oi.index, oi.index + 1)}">A</span>
+                        <span class="var-choice-text" th:text="${opt}">3、9</span>
+                    </div>
+                </div>
+
+                <div class="var-detail-answer" th:if="${question.type == 'CHOICE'}">
+                    正确答案：<b th:text="${choiceCorrectText}">B. 3、9</b>
+                </div>
+                <div class="var-detail-answer" th:unless="${question.type == 'CHOICE'}">
+                    正确答案：<b th:text="${answerText}">4、4</b>
+                </div>
+            </section>
+
+            <!-- 统计 -->
+            <section class="var-detail-stats">
+                <div class="stat-box total">
+                    <span>总作答人数</span>
+                    <b th:text="${total}">0</b><i>人</i>
+                </div>
+                <div class="stat-box ok">
+                    <span>回答正确</span>
+                    <b th:text="${correctCount}">0</b><i>人</i>
+                </div>
+                <div class="stat-box bad">
+                    <span>回答错误</span>
+                    <b th:text="${wrongCount}">0</b><i>人</i>
+                </div>
+                <div class="stat-box rate">
+                    <span>准确率</span>
+                    <b th:text="${accuracy}">0.00</b><i>%</i>
+                </div>
+            </section>
+
+            <!-- 名单 -->
+            <div class="var-detail-cols">
+                <section class="var-detail-list ok">
+                    <h3>✅ 回答正确的同学 <span th:text="${correctCount}">0</span></h3>
+                    <ul>
+                        <li th:each="a : ${correctList}">
+                            <span class="dl-name" th:text="${a.studentName}">学生</span>
+                            <span class="dl-answer" th:text="${a.answerText}">4、4</span>
+                            <span class="dl-time" th:text="${a.time}">2026-11-27 18:00</span>
+                        </li>
+                    </ul>
+                    <p class="var-empty" th:if="${correctList == null or correctList.isEmpty()}">
+                        还没有同学答对～
+                    </p>
+                </section>
+
+                <section class="var-detail-list bad">
+                    <h3>❌ 回答错误的同学 <span th:text="${wrongCount}">0</span></h3>
+                    <ul>
+                        <li th:each="a : ${wrongList}">
+                            <span class="dl-name" th:text="${a.studentName}">学生</span>
+                            <span class="dl-answer" th:text="${a.answerText}">4、4</span>
+                            <span class="dl-time" th:text="${a.time}">2026-11-27 18:00</span>
+                        </li>
+                    </ul>
+                    <p class="var-empty" th:if="${wrongList == null or wrongList.isEmpty()}">
+                        没有同学答错，真棒！
+                    </p>
+                </section>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/variation-stem.js}"></script>
+</body>
+</html>

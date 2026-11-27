@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>自定义书架 - 数学乐园</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="stylesheet" th:href="@{/css/shelf-admin.css}"/>
+</head>
+<body>
+<div class="layout">
+    <nav th:replace="layout/common :: sidebar('shelf-admin')"></nav>
+    <div class="main">
+        <header th:replace="layout/common :: header('自定义书架 · 学生提交')"></header>
+
+        <div class="content shelf-admin">
+            <div class="shelf-admin-head">
+                <h2>学生书架提交 <span class="shelf-total" th:text="${total}">0</span></h2>
+                <span class="shelf-tip">点击书架可放大查看</span>
+            </div>
+
+            <div class="shelf-grid">
+                <article class="shelf-item" th:each="s : ${rows}"
+                         th:attr="data-student=${s.studentName},
+                                  data-config=${'左 ' + s.leftLayers + ' 层 × 每层 ' + s.leftBooks + ' 本　右 ' + s.rightLayers + ' 层 × 每层 ' + s.rightBooks + ' 本'}">
+                    <div class="shelf-item-head">
+                        <div class="shelf-student">
+                            <span class="shelf-avatar">👤</span>
+                            <b th:text="${s.studentName}">学生</b>
+                        </div>
+                        <span class="shelf-time" th:text="${s.time}">2026-11-27</span>
+                    </div>
+
+                    <div class="shelf-config">
+                        左 <b th:text="${s.leftLayers}">3</b>层×<b th:text="${s.leftBooks}">10</b>本
+                        <span class="dot">·</span>
+                        右 <b th:text="${s.rightLayers}">3</b>层×<b th:text="${s.rightBooks}">10</b>本
+                    </div>
+
+                    <div class="ms-shelf">
+                        <div class="ms-side">
+                            <div class="ms-row" th:each="l : ${#numbers.sequence(1, s.leftLayers)}">
+                                <span class="ms-layer" th:text="${l}">1</span>
+                                <div class="ms-books">
+                                    <i class="ms-book" th:each="j : ${#numbers.sequence(1, s.leftShow)}"></i>
+                                    <span class="ms-more" th:if="${s.leftMore > 0}" th:text="'+' + ${s.leftMore}">+0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ms-side right">
+                            <div class="ms-row" th:each="l : ${#numbers.sequence(1, s.rightLayers)}">
+                                <span class="ms-layer" th:text="${l}">1</span>
+                                <div class="ms-books">
+                                    <i class="ms-book" th:each="j : ${#numbers.sequence(1, s.rightShow)}"></i>
+                                    <span class="ms-more" th:if="${s.rightMore > 0}" th:text="'+' + ${s.rightMore}">+0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <p class="shelf-empty" th:if="${rows == null or rows.isEmpty()}">
+                还没有学生提交书架～
+            </p>
+
+            <div class="shelf-pager" th:if="${pages > 1}">
+                <a th:if="${hasPrev}" class="shelf-page-btn" th:href="@{/shelf/admin/list(page=${page - 1})}">上一页</a>
+                <span class="shelf-page-info">第 <b th:text="${page}">1</b> / <b th:text="${pages}">1</b> 页</span>
+                <a th:if="${hasNext}" class="shelf-page-btn" th:href="@{/shelf/admin/list(page=${page + 1})}">下一页</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 放大查看 -->
+<div class="shelf-modal-mask" id="shelfModal" aria-hidden="true">
+    <div class="shelf-modal" role="dialog" aria-modal="true">
+        <div class="shelf-modal-head">
+            <div class="shelf-modal-title">
+                <b id="shelfModalName">学生</b>
+                <span id="shelfModalConfig"></span>
+            </div>
+            <button type="button" class="shelf-modal-close" id="shelfModalClose">✕</button>
+        </div>
+        <div class="shelf-modal-body" id="shelfModalBody"></div>
+    </div>
+</div>
+
+<script th:src="@{/js/shelf-admin.js}"></script>
+</body>
+</html>

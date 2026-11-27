@@ -1,0 +1,140 @@
+/* ============================================================
+   自定义等式看板
+   ============================================================ */
+.eq-board-content { padding: 16px; }
+
+.eq-board-card {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #e8eef7;
+    box-shadow: 0 10px 26px rgba(70, 100, 150, .10);
+    padding: 16px 18px 18px;
+}
+
+.eq-board-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+.eq-board-head h2 {
+    margin: 0;
+    font-size: 16px;
+    color: #1f2d3d;
+}
+.eq-board-count {
+    display: inline-block;
+    min-width: 22px;
+    margin-left: 4px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: #eaf2ff;
+    color: #4A90E2;
+    font-size: 12px;
+    text-align: center;
+}
+.eq-board-head p {
+    margin: 4px 0 0;
+    font-size: 12.5px;
+    color: #8a99aa;
+}
+
+.eq-board-btn {
+    height: 38px;
+    padding: 0 22px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #4A90E2, #6fb1f5);
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(74, 144, 226, .32);
+}
+.eq-board-btn:hover { filter: brightness(1.04); }
+
+.eq-board-stage {
+    position: relative;
+    height: calc(100vh - 250px);
+    min-height: 420px;
+    border-radius: 18px;
+    overflow: hidden;
+    background:
+        radial-gradient(900px 420px at 50% 0%, #123054 0%, #071423 70%),
+        linear-gradient(180deg, #0a1a2e, #06111f);
+    border: 1px solid #16385c;
+}
+
+.eq-bubble {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 13px;
+    border-radius: 999px;
+    background: rgba(9, 26, 46, .88);
+    border: 1px solid rgba(62, 230, 255, .48);
+    color: #d8f7ff;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 0 14px rgba(62, 230, 255, .20);
+    will-change: left, top;
+}
+.eq-bubble.ok {
+    border-color: rgba(94, 230, 150, .62);
+    color: #dcffe9;
+    box-shadow: 0 0 14px rgba(94, 230, 150, .20);
+}
+.eq-bubble.bad {
+    border-color: rgba(255, 154, 104, .58);
+    color: #ffe9d8;
+    box-shadow: 0 0 14px rgba(255, 154, 104, .20);
+}
+
+.eq-b-who {
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    font-size: 10.5px;
+    font-weight: 600;
+    opacity: .65;
+}
+
+.eq-board-stage.arranging .eq-bubble {
+    transition: left .55s cubic-bezier(.3, .8, .3, 1),
+                top .55s cubic-bezier(.3, .8, .3, 1);
+}
+
+.eq-board-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6f8ba8;
+    font-size: 14px;
+}
+
+/* ---------- 新提交气泡的出现效果 ---------- */
+.eq-bubble { --glow: 62, 230, 255; }
+.eq-bubble.ok { --glow: 94, 230, 150; }
+.eq-bubble.bad { --glow: 255, 154, 104; }
+
+@keyframes eqPop {
+    0%   { transform: translate(-50%, -50%) scale(.25); opacity: 0; }
+    60%  { transform: translate(-50%, -50%) scale(1.18); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes eqGlow {
+    0%   { box-shadow: 0 0 0 rgba(var(--glow), 0); }
+    30%  { box-shadow: 0 0 28px rgba(var(--glow), .9); }
+    100% { box-shadow: 0 0 14px rgba(var(--glow), .22); }
+}
+.eq-bubble.is-new {
+    z-index: 5;
+    animation: eqPop .8s cubic-bezier(.34, 1.4, .64, 1), eqGlow 1.6s ease-out;
+}
